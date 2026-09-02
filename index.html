@@ -1,0 +1,185 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Formulário Médico Acadêmico</title>
+    <link rel="stylesheet" href="style.css">
+</head>
+<body>
+    <div class="container">
+        <main>
+            <div class="contenedor-formulario">
+                <h1 class="titulo-formulario">Formulário Médico Acadêmico</h1>
+                <p class="subtitulo-general">Pesquisa para professores por especialidade. Seus dados serão tratados com confidencialidade e usados exclusivamente para fins acadêmicos e estatísticos.</p>
+            </div>
+
+            <form id="formulario" class="espaciado-formulario" novalidate>
+
+                <!-- ==== Seção 1: Dados Pessoais ==== -->
+                <h2 class="subtitulo">Dados Pessoais</h2>
+
+                <div class="campo">
+                    <label for="nombre" class="etiqueta">Nome Completo</label>
+                    <input id="nombre" type="text" name="nombre" placeholder="António Santos" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="apellido" class="etiqueta">Sobrenome</label>
+                    <input id="apellido" type="text" name="apellido" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="fecha_nacimiento" class="etiqueta">Data de Nascimento</label>
+                    <input id="fecha_nacimiento" type="date" name="fecha_nacimiento" placeholder="10/10/1990" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="sexo" class="etiqueta">Sexo</label>
+                    <select id="sexo" name="sexo" required class="entrada">
+                        <option value="">Selecione...</option>
+                        <option value="Masculino">Masculino</option>
+                        <option value="Feminino">Feminino</option>
+                        <option value="Outro">Outro</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="nacionalidad" class="etiqueta">Nacionalidade</label>
+                    <input id="nacionalidad" type="text" name="nacionalidad" placeholder="Portugal" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="documento" class="etiqueta">Documento de Identidade / Passaporte</label>
+                    <input id="documento" type="text" name="documento" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="fiscal" class="etiqueta">Número de Identificação Fiscal (NIF)</label>
+                    <input id="fiscal" type="text" name="fiscal" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="telefono" class="etiqueta">Telefone Pessoal / Celular</label>
+                    <input id="telefono" type="tel" name="telefono" placeholder="123 456 789" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="correo_personal" class="etiqueta">E-mail Pessoal</label>
+                    <input id="correo_personal" type="email" name="correo_personal" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="correo_institucional" class="etiqueta">E-mail Institucional</label>
+                    <input id="correo_institucional" type="email" name="correo_institucional" required class="entrada">
+                </div>
+
+                <!-- ==== Seção 2: Formação Acadêmica e Profissional ==== -->
+                <h2 class="subtitulo">Formação Acadêmica e Profissional</h2>
+
+                <div class="campo">
+                    <label for="titulo_grado" class="etiqueta">Título de Graduação</label>
+                    <input id="titulo_grado" type="text" name="titulo_grado" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="universidad" class="etiqueta">Universidade que conferiu o título</label>
+                    <input id="universidad" type="text" name="universidad" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="ano_graduacion" class="etiqueta">Ano de Graduação</label>
+                    <input id="ano_graduacion" type="number" name="ano_graduacion" min="1900" max="2100" placeholder="2026" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="titulo_especialidad" class="etiqueta">Título de Especialidade</label>
+                    <input id="titulo_especialidad" type="text" name="titulo_especialidad" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="ano_especialidad" class="etiqueta">Ano de obtenção do título de especialista</label>
+                    <input id="ano_especialidad" type="number" name="ano_especialidad" min="1900" max="2100" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="subespecialidad" class="etiqueta">Subespecialidade</label>
+                    <input id="subespecialidad" type="text" name="subespecialidad" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="grado_academico" class="etiqueta">Grau Acadêmico</label>
+                    <select id="grado_academico" name="grado_academico" required class="entrada">
+                        <option value="">Selecione...</option>
+                        <option value="Graduado">Graduado</option>
+                        <option value="Especialista">Especialista</option>
+                        <option value="Mestre">Mestre</option>
+                        <option value="Doutor">Doutor</option>
+                        <option value="Pós-doutor">Pós-doutor</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="registro_profesional" class="etiqueta">Registro Profissional</label>
+                    <input id="registro_profesional" type="text" name="registro_profesional" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="anos_experiencia_docente" class="etiqueta">Anos de Experiência Docente</label>
+                    <input id="anos_experiencia_docente" type="number" name="anos_experiencia_docente" min="0" max="80" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="anos_experiencia_assistencial" class="etiqueta">Anos de Experiência Assistencial</label>
+                    <input id="anos_experiencia_assistencial" type="number" name="anos_experiencia_assistencial" min="0" max="80" required class="entrada">
+                </div>
+
+                <!-- ==== Seção 3: Dados Laborais e Institucionais ==== -->
+                <h2 class="subtitulo">Dados Laborais e Institucionais</h2>
+
+                <div class="campo">
+                    <label for="cargo_docente" class="etiqueta">Cargo Docente</label>
+                    <select id="cargo_docente" name="cargo_docente" required class="entrada">
+                        <option value="">Selecione...</option>
+                        <option value="Titular">Titular</option>
+                        <option value="Associado">Associado</option>
+                        <option value="Assistente">Assistente</option>
+                        <option value="Convidado">Convidado</option>
+                    </select>
+                </div>
+
+                <div class="campo">
+                    <label for="institucion" class="etiqueta">Instituição</label>
+                    <input id="institucion" type="text" name="institucion" required class="entrada">
+                </div>
+
+                <div class="campo">
+                    <label for="departamento" class="etiqueta">Departamento</label>
+                    <input id="departamento" type="text" name="departamento" required class="entrada">
+                </div>
+
+                <!-- ==== Consentimento informado ==== -->
+                <div class="campo consentimiento">
+                    <label class="etiqueta-consentimiento">
+                        <input type="checkbox" id="consentimiento" name="consentimiento" value="aceito" required>
+                        <span>Declaro que entendi as informações sobre a pesquisa e autorizo o tratamento dos meus dados pessoais, de forma confidencial e com finalidade exclusivamente acadêmica e estatística.</span>
+                    </label>
+                </div>
+
+                <!-- ==== Botão enviar e feedback ==== -->
+                <div class="estado" id="estado" role="status" aria-live="polite"></div>
+
+                <button type="submit" id="botonEnviar" class="boton-enviar">Enviar</button>
+
+            </form>
+        </main>
+    </div>
+    <script>
+        // URL base del backend. Dejar vacío en producción (Vercel sirve el
+        // API en el mismo dominio bajo /api/*). Para desarrollo local con el
+        // backend en localhost, apuntar a esta URL:
+        //   window.FORMULARIO_API_URL = "http://localhost:8000";
+    </script>
+    <script src="app.js"></script>
+</body>
+</html>

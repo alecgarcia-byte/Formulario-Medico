@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <title>Painel Admin · Porphyria</title>
+    <link rel="stylesheet" href="/porphyria/porphyria.css">
+</head>
+<body>
+    <main class="painel">
+
+        <!-- ====== Vista de LOGIN ====== -->
+        <section id="vista-login" class="vista">
+            <h1>Painel Administrativo</h1>
+            <p class="subtitulo">Acesso restrito. Insira suas credenciais.</p>
+            <form id="form-login" novalidate>
+                <label for="usuario">Usuário</label>
+                <input type="text" id="usuario" name="usuario" autocomplete="username"
+                       required minlength="1" maxlength="50">
+                <label for="password">Senha</label>
+                <input type="password" id="password" name="password"
+                       autocomplete="current-password" required maxlength="72">
+                <div id="estado-login" class="estado" role="status" aria-live="polite"></div>
+                <button type="submit" id="botao-login">Entrar</button>
+            </form>
+        </section>
+
+        <!-- ====== Vista de RESULTADOS ====== -->
+        <section id="vista-resultados" class="vista" hidden>
+            <header>
+                <h1>Resultados da Pesquisa</h1>
+                <div class="acoes">
+                    <button type="button" id="botao-exportar">Exportar Excel</button>
+                    <button type="button" id="botao-sair" class="secundario">Sair</button>
+                </div>
+            </header>
+
+            <div id="estado-resultados" class="estado" role="status" aria-live="polite"></div>
+
+            <div class="filtros">
+                <label for="filtro-cargo">Cargo</label>
+                <select id="filtro-cargo">
+                    <option value="">Todos</option>
+                    <option value="Titular">Titular</option>
+                    <option value="Associado">Associado</option>
+                    <option value="Assistente">Assistente</option>
+                    <option value="Convidado">Convidado</option>
+                </select>
+                <label for="filtro-universidade">Universidade</label>
+                <input type="text" id="filtro-universidade" placeholder="Pesquisar universidade">
+                <button type="button" id="botao-filtrar">Filtrar</button>
+            </div>
+
+            <div class="tabla-envoltorio">
+                <table id="tabla-resultados">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Documento</th>
+                            <th>NIF</th>
+                            <th>Universidade</th>
+                            <th>Cargo</th>
+                            <th>Data de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <p id="resumen-total" class="resumen"></p>
+        </section>
+
+    </main>
+
+    <script>
+        // URL base del backend. Dejar vacío en producción (la API se sirve en
+        // el mismo dominio bajo /api/*). Para desarrollo local, apuntar a:
+        //   window.FORMULARIO_API_URL = "http://localhost:8000";
+    </script>
+    <script src="/porphyria/porphyria.js"></script>
+</body>
+</html>

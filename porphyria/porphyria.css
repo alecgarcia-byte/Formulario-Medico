@@ -1,0 +1,128 @@
+/* porphyria.css - Painel admin (se sirve en /porphyria). */
+
+:root {
+    --color-primario: #2c3e50;
+    --color-acento: #1a7f8e;
+    --color-fondo: #f4f6f8;
+    --color-tarjeta: #ffffff;
+    --color-texto: #2b2b2b;
+    --color-error: #c0392b;
+    --color-exito: #1e7e34;
+    --radio: 8px;
+}
+
+* { box-sizing: border-box; }
+
+body {
+    margin: 0;
+    font-family: "Segoe UI", system-ui, -apple-system, sans-serif;
+    background: var(--color-fondo);
+    color: var(--color-texto);
+    line-height: 1.5;
+}
+
+.painel {
+    max-width: 1000px;
+    margin: 0 auto;
+    padding: 32px 20px;
+}
+
+.vista { display: block; }
+
+#vista-login {
+    max-width: 380px;
+    margin: 8vh auto 0;
+    background: var(--color-tarjeta);
+    padding: 32px;
+    border-radius: var(--radio);
+    box-shadow: 0 2px 12px rgba(0,0,0,0.08);
+}
+
+#vista-login h1 {
+    margin: 0 0 4px;
+    font-size: 1.5rem;
+    color: var(--color-primario);
+}
+
+.subtitulo { margin-top: 0; color: #5a6a7a; font-size: 0.95rem; }
+
+label { display: block; margin: 16px 0 6px; font-weight: 600; font-size: 0.9rem; }
+
+input, select {
+    width: 100%;
+    padding: 10px 12px;
+    border: 1px solid #ccd4db;
+    border-radius: 6px;
+    font-size: 1rem;
+}
+
+input:focus, select:focus {
+    outline: 2px solid var(--color-acento);
+    outline-offset: 1px;
+    border-color: var(--color-acento);
+}
+
+button {
+    margin-top: 20px;
+    width: 100%;
+    padding: 11px 16px;
+    background: var(--color-primario);
+    color: #fff;
+    border: none;
+    border-radius: 6px;
+    font-size: 1rem;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+button:hover:not(:disabled) { filter: brightness(1.08); }
+button:disabled { opacity: 0.6; cursor: not-allowed; }
+
+button.secundario {
+    background: transparent;
+    color: var(--color-primario);
+    border: 1px solid var(--color-primario);
+    width: auto;
+    margin-top: 0;
+    padding: 8px 16px;
+}
+
+.acoes { display: flex; gap: 10px; align-items: center; }
+.acoes button { width: auto; margin-top: 0; padding: 8px 18px; }
+
+header { display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; }
+header h1 { color: var(--color-primario); font-size: 1.4rem; }
+
+.estado {
+    margin-top: 16px;
+    padding: 10px 12px;
+    border-radius: 6px;
+    font-size: 0.95rem;
+    min-height: 1.2em;
+}
+.estado.carregando { background: #eef6fb; color: #14507a; }
+.estado.erro { background: #fdecea; color: var(--color-error); }
+.estado.exito { background: #e7f6ec; color: var(--color-exito); }
+
+.filtros {
+    display: flex;
+    gap: 12px;
+    align-items: flex-end;
+    flex-wrap: wrap;
+    margin: 20px 0;
+    background: var(--color-tarjeta);
+    padding: 16px;
+    border-radius: var(--radio);
+}
+.filtros label { margin: 0; }
+.filtros input, .filtros select { width: auto; }
+.filtros button { width: auto; margin-top: 0; padding: 9px 18px; background: var(--color-acento); }
+
+.tabla-envoltorio { overflow-x: auto; background: var(--color-tarjeta); border-radius: var(--radio); box-shadow: 0 2px 8px rgba(0,0,0,0.06); }
+
+table { width: 100%; border-collapse: collapse; font-size: 0.9rem; }
+th, td { padding: 10px 12px; text-align: left; border-bottom: 1px solid #e3e8ed; white-space: nowrap; }
+th { background: var(--color-primario); color: #fff; font-weight: 600; }
+tr:nth-child(even) td { background: #fafbfc; }
+
+.resumen { margin-top: 12px; color: #5a6a7a; font-size: 0.9rem; }

@@ -1,0 +1,13 @@
+# Dependencias para el despliegue en Vercel (función serverless api/index.py).
+# Vercel instala las dependencias desde este requirements.txt de la raíz.
+# Nota: para desarrollo local se usa backend/requirements.txt (venv).
+fastapi==0.115.6
+sqlalchemy==2.0.52
+psycopg2-binary==2.9.12
+pydantic==2.13.5
+email-validator==2.2.0
+cryptography==44.0.0
+bcrypt==4.2.1
+python-dotenv==1.2.3
+pandas==2.3.3
+openpyxl==3.1.5

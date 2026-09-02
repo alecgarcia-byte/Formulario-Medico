@@ -1,0 +1,66 @@
+# =========================================================
+# Python
+# =========================================================
+__pycache__/
+*.py[cod]
+*$py.class
+*.egg-info/
+.eggs/
+build/
+dist/
+
+# Caché de pytest y cobertura
+.pytest_cache/
+.cache/
+.coverage
+.coverage.*
+htmlcov/
+*.cover
+
+# Entorno virtual (cualquier ubicación)
+venv/
+.venv/
+env/
+.env[0-9]*/
+backend/venv/
+
+# =========================================================
+# Base de datos local (fallback de desarrollo — NO subir)
+# =========================================================
+*.db
+*.sqlite
+*.sqlite3
+
+# =========================================================
+# Secretos / entorno
+# =========================================================
+# Nunca subir archivos .env reales. El .env.example SÍ se sube
+# como plantilla (no contiene secretos), así que NO se ignora.
+.env
+.env.*
+!.env.example
+
+# =========================================================
+# Node
+# =========================================================
+node_modules/
+npm-debug.log*
+yarn-error.log*
+package-lock.json
+pnpm-lock.yaml
+
+# =========================================================
+# IDE / editores
+# =========================================================
+.vscode/
+.idea/
+*.swp
+*.swo
+*~
+.DS_Store
+
+# =========================================================
+# Operating System
+# =========================================================
+Thumbs.db
+Desktop.ini
