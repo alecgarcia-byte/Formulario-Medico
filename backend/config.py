@@ -16,6 +16,7 @@ falta un secreto imprescindible, en lugar de funcionar de forma insegura.
 
 from __future__ import annotations
 
+import logging
 import os
 from pathlib import Path
 
@@ -86,7 +87,11 @@ def jwt_secret() -> str:
 
 
 def credenciales_admin() -> tuple[str, str]:
-    """Devuelve (usuario, hash_bcrypt) del admin; valida su presencia."""
+    """Devuelve (usuario, hash_bcrypt) del admin; valida su presencia.
+
+    Se mantiene por compatibilidad, pero el acceso ya no usa usuario/
+    contraseña: se autentica con `admin_token()` (URL/llave secreta).
+    """
     usuario = _get_secreto("ADMIN_USER")   # sin default
     hash_pass = _get_secreto("ADMIN_PASSWORD_HASH")  # sin default
     if not hash_pass.startswith("$2"):
@@ -94,6 +99,30 @@ def credenciales_admin() -> tuple[str, str]:
             "ADMIN_PASSWORD_HASH debe ser un hash bcrypt (empieza con '$2')."
         )
     return usuario, hash_pass
+
+
+def admin_token() -> str:
+    """Token/llave secreta de acceso al panel admin (ADMIN_TOKEN).
+
+    Es un secreto largo y aleatorio que actúa como URL y llave de acceso
+    (sin usuario/contraseña). Si no se ha configurado (p. ej. en desarrollo
+    sin `.env`), se genera uno efímero por proceso y se avisa por log.
+    """
+    valor = os.getenv("ADMIN_TOKEN")
+    if valor and len(valor) >= 20:
+        return valor
+    # En desarrollo generamos uno aleatorio si falta; en producción falla.
+    if not ES_PRODUCCION:
+        import secrets as _secrets
+        generado = _secrets.token_urlsafe(32)
+        logging.getLogger("formulario").warning(
+            "ADMIN_TOKEN no configurado: usando token temporal %s", generado
+        )
+        return generado
+    raise RuntimeError(
+        "Variable de entorno 'ADMIN_TOKEN' no configurada. "
+        "Consulte docs/DEPLOY.md y .env.example."
+    )
 
 
 def frontend_url() -> str | None:

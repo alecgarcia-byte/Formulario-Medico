@@ -1,174 +1,581 @@
 /* ============================================================
    Formulário Médico Acadêmico - style.css
+   Sistema de diseño Liquid UI - "Obra de arte glassmórfica"
    Atributos/clases en español (convención de desarrollo)
    Textos visibles en portugués (contenido en el HTML)
    ============================================================ */
 
-/* ---------- 1. Variables de paleta y tema ---------- */
+/* ---------- 1. Tokens de diseño (Liquid) ---------- */
 :root {
-    /* Paleta principal (profesional médica, tonos azules/teal) */
-    --color-primario: #0f766e;          /* teal dark */
-    --color-primario-oscuro: #115e59;
-    --color-primario-claro: #ccfbf1;
-    --color-enfasis: #047857;           /* emerald */
+    /* Paleta Liquid (azul) */
+    --color-azul-1: #1E40AF;
+    --color-azul-2: #2563EB;
+    --color-azul-3: #60A5FA;
+    --color-fondo: #EAF1FF;
+    --color-blanco: #FFFFFF;
+    --color-gris-1: #F3F4F6;
+    --color-gris-2: #E5E7EB;
+    --color-texto: #1F2A44;
+    --color-exito: #10B981;
+    --color-error: #EF4444;
 
-    /* Neutros */
-    --color-fondo: #f0fdfa;
-    --color-superficie: #ffffff;
-    --color-texto: #1e293b;
-    --color-texto-suave: #64748b;
-    --color-borde: #cbd5e1;
-    --color-error: #dc2626;
-    --color-exito: #16a34a;
-    --color-info: #2563eb;
+    /* Formas Liquid */
+    --radius-liquid: 14px;
+    --radius-pill: 9999px;
+    --radius-org: 34% 66% 62% 38% / 46% 38% 62% 54%;
+    --radius-org-2: 60% 40% 46% 54% / 60% 62% 38% 40%;
+    --shadow-soft: 0 8px 24px rgba(16, 24, 40, 0.08);
+    --shadow-elev: 0 18px 48px rgba(16, 24, 40, 0.18);
+
+    /* Espaciado */
+    --space-xs: 6px;
+    --space-sm: 12px;
+    --space-md: 20px;
+    --space-lg: 32px;
 
     /* Tipografía */
-    --fuente-base: "Calibri","Arial","Times New Roman";
-    --tamano-base: 16px;
+    --font-sans: 'Inter', system-ui, -apple-system, 'Segoe UI', Roboto,
+        'Helvetica Neue', Arial, sans-serif;
 
-    /* Espaciado y forma */
-    --radio-borde: 8px;
-    --sombra: 0 2px 8px rgba(15, 23, 42, 0.08);
+    /* Revisión (compatibilidad con clases existentes) */
+    --color-primario: #2563EB;
+    --color-primario-oscuro: #1E40AF;
+    --color-primario-claro: #DBEAFE;
+    --color-enfasis: #7C3AED;
+    --color-superficie: #FFFFFF;
+    --color-texto-suave: #556080;
+    --color-borde: rgba(255, 255, 255, 0.55);
+    --color-info: #2563EB;
 
-    /* Foco visible (accesibilidad) */
+    --radio-borde: var(--radius-liquid);
+    --sombra: var(--shadow-soft);
     --ancho-foco: 3px;
+
+    /* Velocidad base de la curva fluid (Liquid) */
+    --ease-liquid: cubic-bezier(0.22, 1, 0.36, 1);
+    --ease-bounce: cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
-/* ---------- 2. Reset y base ---------- */
-*,
-*::before,
-*::after {
-    box-sizing: border-box;
-    margin: 0;
-    padding: 0;
-}
-
-html {
-    font-size: var(--tamano-base);
-}
-
+/* ---------- 2. Escenario orgánico de fondo (blobs vivientes) ---------- */
 body {
-    font-family: var(--fuente-base);
+    font-family: var(--font-sans);
     background-color: var(--color-fondo);
-    /* Imagen de fondo (Unsplash) con overlay para legibilidad */
-    background-image:
-        linear-gradient(
-            rgba(15, 23, 42, 0.35),
-            rgba(15, 23, 42, 0.35)
-        ),
-        url("https://images.unsplash.com/photo-1579684385127-1ef15d508118?auto=format&fit=crop&w=1920&q=80");
-    background-size: cover;
-    background-position: center;
-    background-repeat: no-repeat;
-    background-attachment: fixed;
     color: var(--color-texto);
     line-height: 1.6;
     min-height: 100vh;
-    padding: 2rem 1rem;
+    padding: var(--space-lg) 1rem;
+    overflow-x: hidden;
+    position: relative;
+    -webkit-font-smoothing: antialiased;
+}
+
+/* Capa de blobs orgánicos en 3D, fija al viewport, que respira y rota.
+   Puro CSS y data-URI: respeta la CSP. */
+body::before,
+body::after {
+    content: "";
+    position: fixed;
+    z-index: -2;
+    pointer-events: none;
+    filter: blur(40px);
+    will-change: transform, opacity;
+}
+
+body::before {
+    width: 46vmax;
+    height: 46vmax;
+    top: -14vmax;
+    left: -12vmax;
+    border-radius: var(--radius-org);
+    background:
+        radial-gradient(circle at 30% 30%, rgba(37, 99, 235, 0.65), transparent 55%),
+        radial-gradient(circle at 70% 70%, rgba(124, 58, 237, 0.55), transparent 55%);
+    animation: blob_float_a 26s var(--ease-liquid) infinite alternate;
+}
+
+body::after {
+    width: 40vmax;
+    height: 40vmax;
+    bottom: -12vmax;
+    right: -10vmax;
+    border-radius: var(--radius-org-2);
+    background:
+        radial-gradient(circle at 60% 40%, rgba(96, 165, 250, 0.6), transparent 55%),
+        radial-gradient(circle at 30% 70%, rgba(16, 185, 129, 0.45), transparent 55%);
+    animation: blob_float_b 32s var(--ease-liquid) infinite alternate;
+}
+
+/* Segunda capa de orbes pequeños, móviles */
+#escena-fondo {
+    content: "";
+    position: fixed;
+    inset: 0;
+    z-index: -1;
+    pointer-events: none;
+    overflow: hidden;
+}
+
+#escena-fondo i {
+    position: absolute;
+    display: block;
+    background: linear-gradient(135deg, rgba(255, 255, 255, 0.0), rgba(37, 99, 235, 0.12));
+    border: 1px solid rgba(255, 255, 255, 0.28);
+    border-radius: var(--radius-org-2);
+    backface-visibility: hidden;
+    animation: orbe 18s var(--ease-liquid) infinite alternate;
+}
+
+@keyframes blob_float_a {
+    0%   { transform: translate(0, 0) rotate(0deg) scale(1); opacity: 0.75; }
+    50%  { transform: translate(6vmax, 4vmax) rotate(40deg) scale(1.12); opacity: 0.95; }
+    100% { transform: translate(2vmax, 8vmax) rotate(80deg) scale(0.96); opacity: 0.7; }
+}
+
+@keyframes blob_float_b {
+    0%   { transform: translate(0, 0) rotate(0deg) scale(1.05); opacity: 0.7; }
+    50%  { transform: translate(-6vmax, -5vmax) rotate(-50deg) scale(0.95); opacity: 0.95; }
+    100% { transform: translate(-3vmax, -9vmax) rotate(-90deg) scale(1.1); opacity: 0.75; }
+}
+
+@keyframes orbe {
+    0%   { transform: translate3d(0, 0, 0) scale(1); }
+    50%  { transform: translate3d(4vmax, -3vmax, 0) scale(1.15); }
+    100% { transform: translate3d(-3vmax, 5vmax, 0) scale(0.9); }
+}
+
+/* El fondo "reacciona" a la interacción del formulario:
+   al enfocar/rellenar el formulario, los blobs ganan fuerza y rotan. */
+#formulario:focus-within ~ .glyph,        /* noop mantenedor */
+.contenedor-formulario:focus-within,
+.espaciado-formulario:focus-within {
+    color-scheme: dark;
+}
+body:has(.espaciado-formulario:focus-within)::before {
+    animation-duration: 14s;
+}
+body:has(.espaciado-formulario:focus-within)::after {
+    animation-duration: 16s;
+    opacity: 0.95;
 }
 
 /* ---------- 3. Contenedor y encabezado ---------- */
 .container {
     max-width: 760px;
     margin: 0 auto;
+    position: relative;
+    z-index: 1;
+}
+
+/* Tarjeta glassmórfica con fuente de luz superior */
+.glass {
+    background: rgba(255, 255, 255, 0.55);
+    backdrop-filter: blur(22px) saturate(1.6);
+    -webkit-backdrop-filter: blur(22px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.8),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.25),
+        0 24px 60px rgba(30, 64, 175, 0.18);
+    position: relative;
+}
+
+/* Anillo luminoso en movimiento (contorno líquido) */
+.espaciado-formulario.glass,
+.contenedor-formulario.glass {
+    transition: transform 0.5s var(--ease-liquid), box-shadow 0.5s ease;
+}
+
+/* Stepper (morphing) */
+.stepper {
+    display: flex;
+    justify-content: center;
+    gap: var(--space-sm);
+    margin: 0 auto var(--space-lg);
+    padding: var(--space-sm);
+    background: rgba(255, 255, 255, 0.45);
+    backdrop-filter: blur(20px) saturate(1.5);
+    -webkit-backdrop-filter: blur(20px) saturate(1.5);
+    border-radius: var(--radius-pill);
+    box-shadow: var(--shadow-soft);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    flex-wrap: wrap;
+    position: relative;
+    z-index: 2;
+}
+
+.step {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 16px;
+    border-radius: var(--radius-pill);
+    color: var(--color-texto-suave);
+    font-size: 0.85rem;
+    font-weight: 600;
+    transition: background 0.4s var(--ease-liquid),
+        color 0.4s ease, transform 0.4s var(--ease-bounce),
+        box-shadow 0.4s ease;
+    cursor: pointer;
+}
+
+.step .step-num {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 24px;
+    height: 24px;
+    border-radius: 50%;
+    background: rgba(255, 255, 255, 0.8);
+    color: var(--color-texto-suave);
+    font-size: 0.78rem;
+    transition: background 0.4s ease, color 0.4s ease, transform 0.4s ease;
+}
+
+.step:hover {
+    transform: translateY(-1px);
+    background: rgba(255, 255, 255, 0.7);
+}
+
+.step.ativo {
+    background: linear-gradient(135deg, var(--color-azul-1), var(--color-azul-2));
+    color: #fff;
+    box-shadow: 0 10px 26px rgba(37, 99, 235, 0.45);
+    transform: scale(1.05);
+}
+
+.step.ativo .step-num {
+    background: rgba(255, 255, 255, 0.25);
+    color: #fff;
+}
+
+.step.completo .step-num {
+    background: var(--color-exito);
+    color: #fff;
+}
+
+.step.completo {
+    color: var(--color-azul-2);
+}
+
+/* Conector animado entre pasos */
+.step:not(:last-child)::after {
+    content: "";
+    position: absolute;
+    left: calc(100% + 2px);
+    top: 50%;
+    width: 18px;
+    height: 2px;
+    background: rgba(255, 255, 255, 0.8);
+    transition: background 0.5s ease;
+    transform: translateY(-50%);
+}
+
+.step:not(:last-child)::before {
+    content: "";
+    position: absolute;
+    left: calc(100% + 2px);
+    top: 50%;
+    width: 18px;
+    height: 2px;
+    background: linear-gradient(90deg, var(--color-exito), var(--color-azul-2));
+    transform: translateY(-50%) scaleX(0);
+    transform-origin: left;
+    transition: transform 0.6s var(--ease-liquid);
+    z-index: 0;
+}
+
+.step.completo:not(:last-child)::before {
+    transform: translateY(-50%) scaleX(1);
+}
+
+.step { position: relative; }
+
+/* Check animado en pasos completos */
+.step.completo .step-num::after {
+    content: "";
+    position: absolute;
+    inset: 0;
+    border-radius: 50%;
+    background: rgba(16, 185, 129, 0.35);
+    animation: halo_check 0.7s var(--ease-liquid);
+}
+
+@keyframes halo_check {
+    from { box-shadow: 0 0 0 0 rgba(16, 185, 129, 0.5); }
+    to { box-shadow: 0 0 0 12px rgba(16, 185, 129, 0); }
+}
+
+.step-num { position: relative; }
+
+/* Encabezado del formulario: tarjeta glass con blasón luminoso */
+.contenedor-formulario {
+    background:
+        radial-gradient(120% 140% at 100% 0%, rgba(37, 99, 235, 0.18), transparent 55%),
+        radial-gradient(120% 120% at 0% 100%, rgba(124, 58, 237, 0.14), transparent 55%),
+        rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(20px) saturate(1.6);
+    -webkit-backdrop-filter: blur(20px) saturate(1.6);
+    border-radius: var(--radius-org);
+    padding: var(--space-lg);
+    margin-bottom: var(--space-md);
+    position: relative;
+    overflow: hidden;
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.85),
+        0 24px 60px rgba(30, 64, 175, 0.2);
+    animation: brillar 8s ease-in-out infinite;
+}
+
+/* Halo "source de luz" que barre la tarjeta */
+.contenedor-formulario::after {
+    content: "";
+    position: absolute;
+    inset: -50%;
+    background:
+        conic-gradient(from 0deg,
+            transparent 0deg,
+            rgba(255, 255, 255, 0.6) 30deg,
+            transparent 70deg,
+            transparent 180deg,
+            rgba(96, 165, 250, 0.4) 220deg,
+            transparent 280deg);
+    animation: girar_halo 14s linear infinite;
+    pointer-events: none;
+}
+
+@keyframes girar_halo {
+    to { transform: rotate(360deg); }
+}
+
+@keyframes brillar {
+    0%, 100% { filter: drop-shadow(0 0 6px rgba(37, 99, 235, 0.15)); }
+    50% { filter: drop-shadow(0 8px 30px rgba(37, 99, 235, 0.35)); }
 }
 
 .titulo-formulario {
-    color: var(--color-primario-oscuro);
-    font-size: 2.75rem;
-    font-weight: 700;
+    color: var(--color-azul-1);
+    font-size: 2.5rem;
+    font-weight: 800;
     text-align: center;
     margin-bottom: 0.5rem;
+    letter-spacing: -0.02em;
+    position: relative;
+    z-index: 1;
+    background: linear-gradient(135deg, var(--color-azul-1), var(--color-azul-2), #7C3AED);
+    -webkit-background-clip: text;
+    background-clip: text;
+    -webkit-text-fill-color: transparent;
 }
 
 .subtitulo-general {
     color: var(--color-texto-suave);
     text-align: center;
-    margin-bottom: 2.9rem;
-}
-
-.contenedor-formulario {
-    background: linear-gradient(135deg, var(--color-primario-claro), var(--color-fondo));
-    border-radius: var(--radio-borde);
-    padding: 1.5rem;
-    margin-bottom: 1.5rem;
+    margin-bottom: 0.4rem;
+    max-width: 540px;
+    margin-left: auto;
+    margin-right: auto;
+    position: relative;
+    z-index: 1;
 }
 
 /* ---------- 4. Formulario ---------- */
 .espaciado-formulario {
-    background-color: var(--color-superficie);
-    border-radius: var(--radio-borde);
-    padding: 2rem;
-    box-shadow: var(--sombra);
+    border-radius: var(--radius-org);
+    padding: var(--space-lg);
+    background:
+        radial-gradient(140% 120% at 10% 0%, rgba(96, 165, 250, 0.12), transparent 50%),
+        rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(24px) saturate(1.6);
+    -webkit-backdrop-filter: blur(24px) saturate(1.6);
+    border: 1px solid rgba(255, 255, 255, 0.6);
+    box-shadow:
+        inset 0 1px 0 rgba(255, 255, 255, 0.9),
+        inset 0 -1px 0 rgba(255, 255, 255, 0.25),
+        0 30px 70px rgba(30, 64, 175, 0.2);
+}
+
+/* Aura líquida que rodea y "reacciona" al enfocar el formulario */
+.espaciado-formulario::after {
+    content: "";
+    position: absolute;
+    inset: -3px;
+    border-radius: calc(var(--radius-org));
+    background:
+        conic-gradient(from 0deg,
+            rgba(37, 99, 235, 0.5),
+            rgba(124, 58, 237, 0.4),
+            rgba(16, 185, 129, 0.35),
+            rgba(37, 99, 235, 0.5));
+    background-size: 300% 300%;
+    z-index: -1;
+    filter: blur(28px);
+    opacity: 0.45;
+    animation: grad_float 9s ease-in-out infinite;
+}
+
+.espaciado-formulario {
+    position: relative;
+}
+
+@keyframes grad_float {
+    0%, 100% { background-position: 0% 50%; filter: blur(24px) brightness(1); }
+    50% { background-position: 100% 50%; filter: blur(30px) brightness(1.25); }
+}
+
+/* Al enfocar cualquier campo, el aura se enciende (contraste con la interacción) */
+.espaciado-formulario:focus-within::after {
+    opacity: 0.85;
 }
 
 .subtitulo {
-    color: var(--color-primario);
-    font-size: 2.25rem;
-    font-weight: 600;
-    border-bottom: 2px solid var(--color-primario-claro);
-    padding-bottom: 0.5rem;
-    margin: 2rem 0 1.25rem;
-    font-weight: bold;
-    font-display: block;
-    text-align: center;
-    margin-top: 10px;
+    color: var(--color-azul-1);
+    font-size: 1.4rem;
+    font-weight: 700;
+    padding-bottom: 0.6rem;
+    margin: 2.2rem 0 1.4rem;
+    text-align: left;
+    position: relative;
+    letter-spacing: -0.01em;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
 .subtitulo:first-of-type {
     margin-top: 0;
 }
 
+/* Píldora orgánica bajo el título de sección */
+.subtitulo::after {
+    content: "";
+    display: block;
+    width: 60px;
+    height: 6px;
+    border-radius: var(--radius-pill);
+    background: linear-gradient(90deg, var(--color-azul-2), var(--color-enfasis), var(--color-exito));
+    background-size: 200% 100%;
+    animation: grad_float 6s ease-in-out infinite;
+}
+
 /* ---------- 5. Campos ---------- */
 .campo {
-    margin-bottom: 1.25rem;
+    margin-bottom: 1.4rem;
+    animation: revelar 0.55s var(--ease-liquid) both;
+}
+
+.campo:nth-of-type(6n+2) { animation-delay: 0.06s; }
+.campo:nth-of-type(6n+3) { animation-delay: 0.12s; }
+.campo:nth-of-type(6n+4) { animation-delay: 0.18s; }
+.campo:nth-of-type(6n+5) { animation-delay: 0.24s; }
+.campo:nth-of-type(6n+6) { animation-delay: 0.30s; }
+
+@keyframes revelar {
+    from { opacity: 0; transform: translateY(16px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .etiqueta {
     display: block;
-    font-weight: 500;
-    font-size: 0.9rem;
+    font-weight: 600;
+    font-size: 0.82rem;
     color: var(--color-texto);
-    margin-bottom: 0.4rem;
+    margin-bottom: 0.5rem;
+    letter-spacing: 0.01em;
 }
 
+/* Campo glass: transparencia con blur, se ilumina al interactuar */
 .entrada {
     display: block;
     width: 100%;
-    padding: 0.65rem 0.8rem;
-    font-size: 1rem;
+    padding: 0.85rem 1rem;
+    font-size: 0.98rem;
     font-family: inherit;
     color: var(--color-texto);
-    background-color: var(--color-superficie);
-    border: 1px solid var(--color-borde);
-    border-radius: var(--radio-borde);
-    transition: border-color 0.15s ease, box-shadow 0.15s ease;
+    background: rgba(255, 255, 255, 0.7);
+    backdrop-filter: blur(8px) saturate(1.3);
+    -webkit-backdrop-filter: blur(8px) saturate(1.3);
+    border: 1.5px solid rgba(255, 255, 255, 0.85);
+    border-radius: 16px;
+    box-shadow: inset 0 1px 3px rgba(30, 64, 175, 0.04);
+    transition: border-color 0.3s ease, box-shadow 0.3s ease,
+        transform 0.3s var(--ease-bounce), background 0.3s ease;
 }
 
 .entrada::placeholder {
-    color: var(--color-texto-suave);
+    color: #8A93AC;
 }
 
-/* Estado de error en campo (gestionado por app.js) */
+.entrada:hover:not(:disabled) {
+    border-color: rgba(96, 165, 250, 0.7);
+    background: rgba(255, 255, 255, 0.85);
+    box-shadow: 0 6px 20px rgba(37, 99, 235, 0.12);
+    transform: translateY(-1px);
+}
+
+.entrada:focus {
+    border-color: var(--color-azul-2);
+    background: #ffffff;
+    box-shadow:
+        0 0 0 4px rgba(37, 99, 235, 0.18),
+        0 10px 30px rgba(37, 99, 235, 0.25),
+        inset 0 1px 3px rgba(30, 64, 175, 0.06);
+    transform: translateY(-2px);
+}
+
+/* Estado de error (gestionado por app.js) */
 .entrada.invalido {
     border-color: var(--color-error);
-    box-shadow: 0 0 0 1px var(--color-error);
+    box-shadow: 0 0 0 4px rgba(239, 68, 68, 0.14);
+    background: rgba(254, 242, 242, 0.9);
+    animation: agitar 0.35s ease;
+}
+
+@keyframes agitar {
+    0%, 100% { transform: translateX(0); }
+    25% { transform: translateX(-5px); }
+    75% { transform: translateX(5px); }
 }
 
 /* Foco visible (accesibilidad) */
 .entrada:focus-visible {
-    outline: var(--ancho-foco) solid var(--color-enfasis);
-    outline-offset: 1px;
-    border-color: var(--color-enfasis);
+    outline: var(--ancho-foco) solid var(--color-azul-2);
+    outline-offset: 2px;
+    border-color: var(--color-azul-2);
+}
+
+select.entrada {
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='16' height='16' viewBox='0 0 24 24' fill='none' stroke='%236B7280' stroke-width='2' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 0.9rem center;
+    background-size: 1rem;
+    padding-right: 2.5rem;
+    cursor: pointer;
 }
 
 /* ---------- 6. Consentimiento ---------- */
 .consentimiento {
-    margin-top: 1.5rem;
-    padding: 1rem;
-    background-color: var(--color-fondo);
-    border: 1px solid var(--color-borde);
-    border-radius: var(--radio-borde);
+    margin-top: 1.6rem;
+    padding: 1.3rem;
+    background: rgba(255, 255, 255, 0.5);
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
+    border: 1px solid rgba(255, 255, 255, 0.65);
+    border-radius: 20px;
+    box-shadow: inset 0 1px 0 rgba(255, 255, 255, 0.8);
+    transition: box-shadow 0.3s ease, border-color 0.3s ease, transform 0.3s var(--ease-bounce);
+}
+
+.consentimiento:hover {
+    box-shadow: 0 14px 34px rgba(37, 99, 235, 0.16);
+    border-color: rgba(96, 165, 250, 0.7);
+    transform: translateY(-2px);
+}
+
+.consentimiento:focus-within {
+    border-color: var(--color-azul-2);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.14);
 }
 
 .etiqueta-consentimiento {
@@ -181,123 +588,386 @@ body {
 }
 
 .etiqueta-consentimiento input[type="checkbox"] {
-    width: 1.25rem;
-    height: 1.25rem;
-    margin-top: 0.15rem;
-    accent-color: var(--color-primario);
+    width: 1.4rem;
+    height: 1.4rem;
+    margin-top: 0.1rem;
+    accent-color: var(--color-azul-2);
     flex-shrink: 0;
+    border-radius: 8px;
 }
 
-/* ---------- 7. Botón enviar ---------- */
+/* ---------- 7. Botón enviar (morphing pill) ---------- */
 .boton-enviar {
+    position: relative;
     display: block;
     width: 100%;
-    padding: 0.85rem 1rem;
+    padding: 1rem 1.5rem;
     font-size: 1.05rem;
-    font-weight: 600;
+    font-weight: 700;
     font-family: inherit;
+    letter-spacing: 0.02em;
     color: #ffffff;
-    background-color: var(--color-primario);
+    background: linear-gradient(120deg, var(--color-azul-1), var(--color-azul-2), #7C3AED, var(--color-azul-1));
+    background-size: 300% 100%;
     border: none;
-    border-radius: var(--radio-borde);
+    border-radius: var(--radius-pill);
     cursor: pointer;
-    margin-top: 1.5rem;
-    transition: background-color 0.15s ease, transform 0.05s ease;
+    margin-top: 1.6rem;
+    overflow: hidden;
+    box-shadow: 0 14px 34px rgba(37, 99, 235, 0.4);
+    transition: transform 0.35s var(--ease-bounce), box-shadow 0.35s ease;
+    animation: boton_grad 8s linear infinite;
 }
 
-.boton-enviar:hover {
-    background-color: var(--color-primario-oscuro);
+@keyframes boton_grad {
+    0% { background-position: 0% 50%; }
+    100% { background-position: 300% 50%; }
 }
 
-.boton-enviar:active {
-    transform: translateY(1px);
+.boton-enviar::before {
+    content: "";
+    position: absolute;
+    top: 0;
+    left: -150%;
+    width: 80%;
+    height: 100%;
+    transform: skewX(-20deg);
+    background: linear-gradient(120deg, transparent, rgba(255, 255, 255, 0.5), transparent);
+    animation: sheen 3.5s var(--ease-liquid) infinite;
+}
+
+@keyframes sheen {
+    0%   { left: -150%; }
+    55%  { left: 150%; }
+    100% { left: 150%; }
+}
+
+.boton-enviar:hover:not(:disabled) {
+    background: linear-gradient(120deg, var(--color-azul-1), var(--color-azul-2), #7C3AED, var(--color-azul-1));
+    background-size: 300% 100%;
+    animation: boton_grad 4s linear infinite;
+    transform: translateY(-3px) scale(1.01);
+    box-shadow: 0 20px 46px rgba(37, 99, 235, 0.55);
+}
+
+.boton-enviar:active:not(:disabled) {
+    transform: translateY(0) scale(0.97);
 }
 
 .boton-enviar:focus-visible {
     outline: var(--ancho-foco) solid var(--color-enfasis);
-    outline-offset: 2px;
+    outline-offset: 3px;
 }
 
 .boton-enviar:disabled {
-    background-color: var(--color-texto-suave);
+    background: #A5B4FC;
     cursor: not-allowed;
-    opacity: 0.7;
+    opacity: 0.8;
+    box-shadow: none;
+    animation: none;
+}
+
+.btn-carga {
+    display: inline-flex;
+    align-items: center;
+    gap: 0.6rem;
 }
 
 /* ---------- 8. Estados de feedback (loading/success/error) ---------- */
 .estado {
-    margin-top: 1rem;
-    padding: 0.9rem 1rem;
-    border-radius: var(--radio-borde);
+    margin-top: 1.2rem;
+    padding: 0.9rem 1.1rem;
+    border-radius: 16px;
     font-size: 0.95rem;
     display: none;
+    position: relative;
+    overflow: hidden;
+    backdrop-filter: blur(12px) saturate(1.4);
+    -webkit-backdrop-filter: blur(12px) saturate(1.4);
 }
 
 .estado.visible {
-    display: block;
+    display: flex;
+    align-items: center;
+    gap: 0.6rem;
+    animation: aparecer 0.45s var(--ease-liquid);
+}
+
+@keyframes aparecer {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: translateY(0) scale(1); }
 }
 
 .estado.estado-loading {
-    background-color: var(--color-primario-claro);
-    color: var(--color-primario-oscuro);
-    border: 1px solid var(--color-primario);
+    background: linear-gradient(160deg, rgba(219, 234, 254, 0.85), rgba(239, 246, 255, 0.7));
+    color: var(--color-azul-1);
+    border: 1px solid rgba(191, 219, 254, 0.9);
 }
 
 .estado.estado-exito {
-    background-color: #dcfce7;
-    color: var(--color-exito);
-    border: 1px solid var(--color-exito);
+    background: linear-gradient(160deg, rgba(209, 250, 229, 0.9), rgba(236, 253, 245, 0.7));
+    color: #047857;
+    border: 1px solid rgba(167, 243, 208, 0.9);
 }
 
 .estado.estado-error {
-    background-color: #fee2e2;
-    color: var(--color-error);
-    border: 1px solid var(--color-error);
+    background: linear-gradient(160deg, rgba(254, 226, 226, 0.9), rgba(254, 242, 242, 0.7));
+    color: #B91C1C;
+    border: 1px solid rgba(254, 202, 202, 0.9);
 }
 
-/* Spinner para estado loading */
+/* Spinner orgánico para loading */
 .spinner {
     display: inline-block;
-    width: 1rem;
-    height: 1rem;
-    border: 2px solid rgba(15, 118, 110, 0.3);
-    border-top-color: var(--color-primario);
+    width: 1.05rem;
+    height: 1.05rem;
+    border: 2.5px solid rgba(37, 99, 235, 0.25);
+    border-top-color: var(--color-azul-2);
     border-radius: 50%;
     animation: girar 0.7s linear infinite;
     vertical-align: middle;
-    margin-right: 0.5rem;
+    flex-shrink: 0;
 }
 
 @keyframes girar {
-    to {
-        transform: rotate(360deg);
-    }
+    to { transform: rotate(360deg); }
+}
+
+/* ---------- 8b. Microinteracciones y estética ---------- */
+
+/* Indicador de contenido en inputs (detalle) */
+.entrada:not([type="checkbox"]):not([type="radio"]):not(:placeholder-shown) {
+    border-color: rgba(96, 165, 250, 0.75);
+    background: linear-gradient(180deg, #FFFFFF, #F0F6FF);
+}
+
+/* Microconsejo bajo campo: contador de caracteres */
+.campo-contador {
+    font-size: 0.72rem;
+    color: var(--color-texto-suave);
+    text-align: right;
+    margin-top: 4px;
+    min-height: 1em;
+    transition: color 0.3s ease;
+    opacity: 0;
+}
+
+.campo-contador.visible { opacity: 1; }
+.campo-contador.cerca { color: #D97706; }
+.campo-contador.limite { color: var(--color-error); font-weight: 600; }
+
+/* Ícono de check decorativo en campos con contenido válido */
+.campo-pos { position: relative; }
+
+.campo-pos .entrada-ok {
+    position: absolute;
+    right: 14px;
+    top: 50%;
+    transform: translateY(-50%) scale(0);
+    width: 18px;
+    height: 18px;
+    color: var(--color-exito);
+    pointer-events: none;
+    filter: drop-shadow(0 0 4px rgba(16, 185, 129, 0.6));
+    transition: transform 0.35s var(--ease-bounce);
+}
+
+.campo-pos .entrada-ok.mostrar { transform: translateY(-50%) scale(1) rotate(0deg); }
+
+/* Selección de texto coherente */
+::selection {
+    background: rgba(37, 99, 235, 0.2);
+    color: var(--color-azul-1);
+}
+
+/* Scrollbar sutil */
+::-webkit-scrollbar { width: 10px; height: 10px; }
+::-webkit-scrollbar-track { background: transparent; }
+::-webkit-scrollbar-thumb {
+    background: linear-gradient(180deg, var(--color-azul-2), var(--color-enfasis));
+    border-radius: var(--radius-pill);
+    border: 2px solid var(--color-fondo);
+}
+
+/* Toast flotante (feedback de éxito/error) glass */
+.toast {
+    position: fixed;
+    bottom: 24px;
+    left: 50%;
+    transform: translateX(-50%) translateY(20px) scale(0.95);
+    max-width: min(92vw, 480px);
+    padding: 14px 20px;
+    border-radius: var(--radius-pill);
+    font-size: 0.95rem;
+    font-weight: 600;
+    color: #fff;
+    box-shadow: var(--shadow-elev);
+    opacity: 0;
+    pointer-events: none;
+    z-index: 1000;
+    border: 1px solid rgba(255, 255, 255, 0.35);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    transition: transform 0.45s var(--ease-bounce), opacity 0.35s ease;
+}
+
+.toast.visible {
+    transform: translateX(-50%) translateY(0) scale(1);
+    opacity: 1;
+}
+
+.toast-exito {
+    background: linear-gradient(135deg, rgba(5, 150, 105, 0.92), rgba(16, 185, 129, 0.92));
+}
+
+.toast-error {
+    background: linear-gradient(135deg, rgba(220, 38, 38, 0.92), rgba(239, 68, 68, 0.92));
+}
+
+.toast-info {
+    background: linear-gradient(135deg, rgba(30, 64, 175, 0.92), rgba(37, 99, 235, 0.92));
+}
+
+/* Pulso de celebración tras envío exitoso + onda expansiva */
+.contenedor-formulario.pulso {
+    animation: pulso 0.7s var(--ease-bounce);
+}
+
+@keyframes pulso {
+    0% { transform: scale(1); }
+    35% { transform: scale(1.03); }
+    100% { transform: scale(1); }
+}
+
+/* Confeti/onda configurable por app.js (clase .estallido) */
+.estallido {
+    position: fixed;
+    width: 8px;
+    height: 8px;
+    border-radius: var(--radius-org);
+    pointer-events: none;
+    z-index: 999;
+    animation: estallido 0.9s var(--ease-liquid) forwards;
+}
+
+@keyframes estallido {
+    0%   { opacity: 1; transform: translate(0,0) scale(1); }
+    100% { opacity: 0; transform: translate(var(--dx), var(--dy)) scale(0.3); }
 }
 
 /* ---------- 9. Responsividad ---------- */
 @media (max-width: 600px) {
     body {
-        padding: 1rem 0.75rem;
+        padding: var(--space-md) 0.75rem;
     }
 
     .espaciado-formulario {
-        padding: 1.25rem;
+        padding: var(--space-md);
+    }
+
+    .contenedor-formulario {
+        padding: var(--space-md);
     }
 
     .titulo-formulario {
-        font-size: 1.4rem;
+        font-size: 1.8rem;
     }
 
     .container {
         max-width: 100%;
     }
+
+    .stepper {
+        border-radius: var(--radius-liquid);
+    }
 }
 
 /* ---------- 10. Preferencia de movimiento reducido ---------- */
 @media (prefers-reduced-motion: reduce) {
-    * {
+    *,
+    *::before,
+    *::after {
         animation-duration: 0.01ms !important;
         animation-iteration-count: 1 !important;
         transition-duration: 0.01ms !important;
+        scroll-behavior: auto !important;
+    }
+}
+
+/* ---------- 11. Alineación del tema Pico.css con el Liquid ----------
+   Pico (pico.min.css) se carga antes que este archivo; aquí heredamos
+   las primitives de Pico con los tokens del proyecto (azul #1E40AF),
+   manteniendo `style-src 'self'` y sin scripts externos. */
+:root {
+    --pico-font-sans-serif: var(--font-sans);
+    --pico-border-radius: 16px;
+    --pico-primary: #1E40AF;
+    --pico-primary-background: #1E40AF;
+    --pico-primary-border: #1E40AF;
+    --pico-primary-hover: #2563EB;
+    --pico-primary-hover-background: #2563EB;
+    --pico-primary-hover-border: #2563EB;
+    --pico-primary-focus: rgba(37, 99, 235, 0.3);
+    --pico-primary-inverse: #FFFFFF;
+    --pico-primary-underline: #2563EB;
+    --pico-font-size: 1rem;
+    --pico-spacing: 1rem;
+}
+
+/* ---------- 12. Selector de idioma (PT / ES / EN) ----------
+   Botones flotantes glass en la esquina superior derecha, coherentes
+   con la estética Liquid del formulario. */
+.selector-idioma {
+    position: fixed;
+    top: 18px;
+    right: 18px;
+    z-index: 900;
+    display: inline-flex;
+    gap: 4px;
+    padding: 5px;
+    border-radius: var(--radius-pill);
+    backdrop-filter: blur(14px) saturate(1.4);
+    -webkit-backdrop-filter: blur(14px) saturate(1.4);
+    background: rgba(255, 255, 255, 0.5);
+    border: 1px solid rgba(255, 255, 255, 0.55);
+    box-shadow: var(--shadow-elev);
+}
+
+.idioma-btn {
+    appearance: none;
+    border: 0;
+    background: transparent;
+    color: var(--color-azul-1, #1e3a8a);
+    font-family: var(--font-sans, inherit);
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    padding: 6px 12px;
+    border-radius: var(--radius-pill);
+    cursor: pointer;
+    transition: color 0.3s var(--ease-liquid), background 0.3s var(--ease-liquid),
+                box-shadow 0.3s var(--ease-liquid), transform 0.3s var(--ease-bounce);
+}
+
+.idioma-btn:hover {
+    transform: translateY(-1px);
+}
+
+.idioma-btn.activo,
+.idioma-btn[aria-pressed="true"] {
+    background: linear-gradient(135deg, var(--color-azul-2, #2563eb), var(--color-azul-1, #1e40af));
+    color: #fff;
+    box-shadow: 0 4px 14px rgba(30, 64, 175, 0.4);
+}
+
+@media (max-width: 600px) {
+    .selector-idioma {
+        top: 12px;
+        right: 12px;
+        padding: 4px;
+    }
+    .idioma-btn {
+        padding: 5px 10px;
+        font-size: 0.72rem;
     }
 }

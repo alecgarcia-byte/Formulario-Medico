@@ -8,30 +8,29 @@ Punto de entrada para desarrollo (uvicorn) y para Vercel serverless.
 Endpoints (Fase 4):
 - POST /respostas : recibe, valida, cifra y persiste un registro.
 
-Endpoints admin (Fase 6): login, listado, detalle, exportación.
+Endpoints admin (acceso por URL secreta ADMIN_TOKEN):
+- GET /admin-{token}                          : sirve el panel (HTML), solo si token válido.
+- GET /api/admin/{token}/respostas            : listado paginado (descifra campos sensibles).
+- GET /api/admin/{token}/respostas/{id}       : detalle de un registro.
+- GET /api/admin/{token}/exportar             : exporta a Excel (.xlsx).
 """
 
 from __future__ import annotations
 
 import logging
+from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import JSONResponse, StreamingResponse
+from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
 from . import config, export, models, schemas
 from .database import Base, engine, get_session
-from .utils.auth import admin_autenticado
+from .utils.auth import admin_token_verificado
 from .utils.middleware import SeguridadHeadersMiddleware
-from .utils.security import (
-    CifradoError,
-    create_jwt,
-    decrypt_field,
-    encrypt_field,
-    es_password_admin,
-)
+from .utils.security import CifradoError, decrypt_field, encrypt_field
 
 
 def _configurar_logging() -> logging.Logger:
@@ -66,7 +65,7 @@ def _validar_secretos_al_arranque() -> None:
         return  # en desarrollo permitimos arrancar y avisar por logs
     config.secret_key_aes()
     config.jwt_secret()
-    config.credenciales_admin()
+    config.admin_token()  # URL/secreta de acceso al panel admin
 
 
 def _crear_aplicacion() -> FastAPI:
@@ -192,40 +191,47 @@ def _crear_aplicacion() -> FastAPI:
         return {"status": "ok", "service": "formulario-api"}
 
     # ==================================================================
-    # Panel admin (protegido por JWT)
+    # Panel admin (protegido por URL/llave secreta ADMIN_TOKEN)
     # ==================================================================
 
-    @app.post("/api/admin/login", response_model=schemas.TokenRespuesta)
-    def admin_login(
-        credenciales: schemas.LoginIn,
+    @app.get("/admin-{token}", response_class=HTMLResponse)
+    def panel_admin_html(
         request: Request,
-    ) -> schemas.TokenRespuesta:
-        """Autentica al administrador y devuelve un JWT."""
-        if not es_password_admin(credenciales.usuario, credenciales.password):
-            logger.warning(
-                "Login admin fallido ip=%s",
-                request.client.host if request.client else "unknown",
-            )
+        token: str,
+    ) -> HTMLResponse:
+        """Sirve el panel admin (sin login) SOLO si el token es correcto.
+
+        Devuelve el HTML del panel con el token embebido en el navegador
+        para que el JS pueda llamar a la API admin. Si el token no coincide,
+        se devuelve 404 para no revelar la existencia del panel.
+        """
+        try:
+            payload = admin_token_verificado(token)
+        except HTTPException:
+            raise
+        del payload
+        try:
+            html = _leer_panel_admin()
+        except OSError as exc:
+            logger.exception("No se pudo leer el panel admin")
             raise HTTPException(
-                status_code=status.HTTP_401_UNAUTHORIZED,
-                detail="Credenciais inválidas.",
-                headers={"WWW-Authenticate": "Bearer"},
-            )
+                status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
+                detail="Erro interno do servidor.",
+            ) from exc
+        # Inyectamos el token (el CIERTO, no el de la ruta) por seguridad.
+        html = html.replace("__ADMIN_TOKEN__", config.admin_token())
+        return HTMLResponse(html)
 
-        token = create_jwt({"sub": "admin"})
-        logger.info("Login admin OK ip=%s",
-                    request.client.host if request.client else "unknown")
-        return schemas.TokenRespuesta(access_token=token)
-
-    @app.get("/api/admin/respostas", response_model=schemas.RespostasPagina)
+    @app.get("/api/admin/{token}/respostas", response_model=schemas.RespostasPagina)
     def listar_respostas(
         request: Request,
+        token: str,
         pagina: int = 1,
         tamano: int = 50,
         cargo: str | None = None,
         universidad: str | None = None,
         db: Session = Depends(get_session),
-        _admin: dict = Depends(admin_autenticado),
+        _admin: dict = Depends(admin_token_verificado),
     ) -> schemas.RespostasPagina:
         """Lista paginada de registros, con campos sensibles descifrados."""
         # Límites de seguridad sobre los parámetros de paginación.
@@ -260,11 +266,12 @@ def _crear_aplicacion() -> FastAPI:
             total=total, pagina=pagina, tamano=tamano, items=items
         )
 
-    @app.get("/api/admin/respostas/{resposta_id}", response_model=schemas.RespostaItem)
+    @app.get("/api/admin/{token}/respostas/{resposta_id}", response_model=schemas.RespostaItem)
     def detalle_resposta(
         resposta_id: str,
+        token: str,
         db: Session = Depends(get_session),
-        _admin: dict = Depends(admin_autenticado),
+        _admin: dict = Depends(admin_token_verificado),
     ) -> schemas.RespostaItem:
         """Detalle de un registro con campos sensibles descifrados."""
         registro = db.get(models.Profesor, resposta_id)
@@ -275,13 +282,14 @@ def _crear_aplicacion() -> FastAPI:
             )
         return _a_item_con_descifrado(registro)
 
-    @app.get("/api/admin/exportar")
+    @app.get("/api/admin/{token}/exportar")
     def exportar_respostas(
         request: Request,
+        token: str,
         cargo: str | None = None,
         universidad: str | None = None,
         db: Session = Depends(get_session),
-        _admin: dict = Depends(admin_autenticado),
+        _admin: dict = Depends(admin_token_verificado),
     ) -> StreamingResponse:
         """Genera y descarga un .xlsx con los registros (descifrados)."""
         consulta = select(models.Profesor)
@@ -320,6 +328,17 @@ def _crear_aplicacion() -> FastAPI:
         )
 
     return app
+
+
+def _leer_panel_admin() -> str:
+    """Lee el HTML del panel admin (plantilla) desde la raíz del proyecto.
+
+    El archivo contiene el marcador `__ADMIN_TOKEN__` que el endpoint
+    `panel_admin_html` reemplaza con el token real antes de servirlo.
+    """
+    raiz = Path(__file__).resolve().parent.parent
+    ruta = raiz / "porphyria" / "panel_admin.html"
+    return ruta.read_text(encoding="utf-8")
 
 
 def _a_item_con_descifrado(reg: models.Profesor) -> schemas.RespostaItem:

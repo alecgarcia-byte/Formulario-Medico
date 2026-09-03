@@ -33,9 +33,11 @@ def _construir_engine():
     """Crea el engine según el backend disponible."""
     if not DATABASE_URL:
         # Desarrollo local sin servidor: base de datos SQLite persistente.
-        url = "sqlite:///./formulario_local.db"
+        # La ruta puede sobrescribirse con SQLITE_PATH (p. ej. para aislar
+        # la base de los tests en un archivo temporal auto-limpio).
+        ruta = os.getenv("SQLITE_PATH") or "./formulario_local.db"
         return create_engine(
-            url,
+            f"sqlite:///{ruta}",
             connect_args={"check_same_thread": False},
             pool_pre_ping=True,
         )

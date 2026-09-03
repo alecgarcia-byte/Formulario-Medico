@@ -9,17 +9,19 @@ Este documento detalla, paso a paso, cómo desplegar el sistema en **Vercel** (f
 ```
 Internet
    │
-   ├── https://<tu-dominio>.vercel.app/            -> index.html (formulario)
-   ├── https://<tu-dominio>.vercel.app/porphyria   -> panel admin (porphyria.html)
+   ├── https://<tu-dominio>.vercel.app/                  -> index.html (formulario)
+   ├── https://<tu-dominio>.vercel.app/admin-<TOKEN>     -> panel admin (URL secreta)
    │
-   └── https://<tu-dominio>.vercel.app/api/*       -> FastAPI (serverless)
-                                                    └── se conecta a Supabase (PostgreSQL)
+   └── https://<tu-dominio>.vercel.app/api/*             -> FastAPI (serverless)
+                                                           └── se conecta a Supabase (PostgreSQL)
 ```
 
-- **Frontend:** estático en la raíz de Vercel (`index.html`, `style.css`, `app.js`).
-- **Panel admin:** `porphyria/porphyria.html` servido en `/porphyria`.
+- **Frontend:** estático en la raíz de Vercel (`index.html`, `style.css`, `app.js`, `pico.min.css` — librería de UI CSS-only autohospedada, sin CDN externo).
+- **Panel admin:** servido por el backend en `/admin-<TOKEN>` donde `<TOKEN>` es el valor de `ADMIN_TOKEN`. **No hay login de usuario/contraseña**: el acceso se protege con una URL/llave secreta.
 - **Backend:** `api/index.py` expone la app FastAPI en `/api/*`.
 - **Base de datos:** PostgreSQL en **Supabase** (la única DB; se eliminaron Neon y Railway).
+
+> **Importante:** `porphyria/panel_admin.html` es la plantilla del panel. El backend la sirve en `/admin-<TOKEN>` e inyecta el token real para que el JavaScript (`porphyria.js`) llame a la API protegida `/api/admin/<TOKEN>/...`.
 
 ---
 
@@ -81,11 +83,11 @@ Todas se cargan desde variables de entorno (nunca hardcodeadas). Configura estas
 |---|---|---|
 | `DATABASE_URL` | ✔ | Cadena del pooler transaccional de Supabase (puerto 6543) |
 | `SECRET_KEY_AES` | ✔ | Clave AES-256 (32 bytes en base64) para campos sensibles |
-| `JWT_SECRET` | ✔ | Secreto para firmar el JWT del panel admin |
-| `ADMIN_USER` | ✔ | Usuario del panel admin |
-| `ADMIN_PASSWORD_HASH` | ✔ | Hash **bcrypt** de la contraseña del admin |
-| `ENVIRONMENT` | opcional | `production` deshabilita `/docs` de FastAPI |
+| `ADMIN_TOKEN` | ✔ | URL/llave secreta de acceso al panel admin (mín. 20 caracteres) |
+| `ENVIRONMENT` | opcional | `production` valida secretos al arranque y deshabilita `/docs` de FastAPI |
 | `FRONTEND_URL` | opcional | URL del frontend (se agrega a CORS) |
+
+> `JWT_SECRET` ya no es necesario para el acceso al panel (se eliminó el login con JWT). Puedes omitirlo.
 
 ### Generar las claves
 
@@ -93,14 +95,14 @@ Todas se cargan desde variables de entorno (nunca hardcodeadas). Configura estas
 # SECRET_KEY_AES (32 bytes -> base64)
 openssl rand -base64 32
 
-# JWT_SECRET (hex de 32 bytes)
+# ADMIN_TOKEN (URL/llave secreta del panel, hex de 32 bytes)
 openssl rand -hex 32
-
-# ADMIN_PASSWORD_HASH (bcrypt). Coste recomendado 12.
-python -c "import bcrypt; print(bcrypt.hashpw(b'MISENHA', bcrypt.gensalt(rounds=12)).decode())"
+# O bien:  node -e "console.log(require('crypto').randomBytes(32).toString('hex'))"
 ```
 
 > **¡Nunca** repitas `SECRET_KEY_AES` entre entornos si no quieres poder migrar datos cifrados entre ellos — y **nunca** lo pierdas**, porque los campos cifrados no podrán descifrarse.
+>
+> `ADMIN_TOKEN` es la **URL de acceso al panel**: quien tenga la URL puede ver los datos. Guárdala en secreto y compártela solo con el personal autorizado.
 
 ---
 
@@ -119,20 +121,20 @@ La carpeta raíz contiene todo (`index.html`, `porphyria/`, `api/`, `backend/`).
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/porphyria", "destination": "/porphyria/porphyria.html" },
+    { "source": "/admin-([^/]+)", "destination": "/api" },
     { "source": "/api/(.*)", "destination": "/api" }
   ]
 }
 ```
 
-- `/porphyria` → sirve el panel admin.
+- `/admin-<TOKEN>` → enruta al backend FastAPI, que sirve el panel solo si el token coincide con `ADMIN_TOKEN` (si no, responde 404).
 - `/api/*` → enruta al backend FastAPI (que expone sus propias rutas `/api/...`).
 
 ### 4.3 Pasos en Vercel
 
 1. Ve a <https://vercel.com> → **Add New → Project**.
 2. Importa tu repositorio de GitHub.
-3. En **Environment Variables**, pega las variables de la sección 3.
+3. En **Environment Variables**, pega las variables de la sección 3 (incluye `ADMIN_TOKEN`).
 4. **Framework Preset:** *Other* (o déjalo en blanco).
 5. **Build Command:** vacío (no se compila nada; es estático + serverless).
 6. Clic en **Deploy**.
@@ -145,11 +147,12 @@ La carpeta raíz contiene todo (`index.html`, `porphyria/`, `api/`, `backend/`).
 # Salud del API
 curl https://<tu-dominio>.vercel.app/api/health
 
-# Panel admin
-# Abre https://<tu-dominio>.vercel.app/porphyria
+# Panel admin (abre en el navegador con tu ADMIN_TOKEN real)
+# https://<tu-dominio>.vercel.app/admin-<ADMIN_TOKEN>
+# Un token incorrecto debe devolver 404 (no revela el panel).
 ```
 
-Prueba todo el flujo: enviar el formulario, entrar al panel `/porphyria`, ver los resultados descifrados y descargar el Excel.
+Prueba todo el flujo: enviar el formulario, entrar al panel `https://<tu-dominio>.vercel.app/admin-<ADMIN_TOKEN>`, ver los resultados descifrados y descargar el Excel.
 
 ---
 
@@ -161,14 +164,18 @@ Prueba todo el flujo: enviar el formulario, entrar al panel `/porphyria`, ver lo
 | Backend en local | `uvicorn backend.main:app --reload` (desde la raíz) |
 | Frontend en local | abrir `index.html` con Live Server; definir `FORMULARIO_API_URL` si el backend no está en el mismo origen |
 
+> Los tests del backend usan una **base SQLite temporal aislada y auto-limpia**
+> (variable `SQLITE_PATH`); no tocan `formulario_local.db` ni dejan datos de
+> prueba en el repositorio.
+
 ---
 
 ## 6. Checklist de despliegue
 
 - [ ] Proyecto Supabase creado y connection string (puerto 6543) copiada.
 - [ ] Tabla creada (o arranque que la cree).
-- [ ] Variables de entorno en Vercel (todas las requeridas).
+- [ ] Variables de entorno en Vercel (todas las requeridas, incluida `ADMIN_TOKEN`).
 - [ ] Repo privado en GitHub conectado a Vercel.
 - [ ] `vercel.json` presente en la raíz.
 - [ ] Deploy exitoso y `/api/health` responde.
-- [ ] `/porphyria` muestra el panel y permite login + exportar Excel.
+- [ ] `/admin-<ADMIN_TOKEN>` muestra el panel y permite exportar Excel; un token incorrecto devuelve 404.

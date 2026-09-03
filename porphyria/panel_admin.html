@@ -1,0 +1,70 @@
+<!DOCTYPE html>
+<html lang="pt">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="robots" content="noindex, nofollow">
+    <meta name="theme-color" content="#1E40AF">
+    <link rel="icon" type="image/svg+xml" href="/favicon.svg">
+    <title>Painel Admin · Porphyria</title>
+    <link rel="stylesheet" href="/pico.min.css">
+    <link rel="stylesheet" href="porphyria.css">
+</head>
+<body data-admin-token="__ADMIN_TOKEN__">
+    <main class="painel">
+        <!-- ====== Vista de RESULTADOS (sin login: acceso por URL secreta) ====== -->
+        <section id="vista-resultados" class="vista">
+            <header>
+                <h1>Resultados da Pesquisa</h1>
+                <div class="acoes">
+                    <button type="button" id="botao-exportar">Exportar Excel</button>
+                    <button type="button" id="botao-sair" class="secundario">Sair</button>
+                </div>
+            </header>
+
+            <div id="estado-resultados" class="estado" role="status" aria-live="polite"></div>
+
+            <div class="filtros">
+                <div class="campo-filtro">
+                    <label for="filtro-cargo">Cargo</label>
+                    <select id="filtro-cargo">
+                        <option value="">Todos</option>
+                        <option value="Titular">Titular</option>
+                        <option value="Associado">Associado</option>
+                        <option value="Assistente">Assistente</option>
+                        <option value="Convidado">Convidado</option>
+                    </select>
+                </div>
+                <div class="campo-filtro">
+                    <label for="filtro-universidade">Universidade</label>
+                    <input type="text" id="filtro-universidade" placeholder="Pesquisar universidade">
+                </div>
+                <button type="button" id="botao-filtrar">Filtrar</button>
+            </div>
+
+            <div class="tabla-envoltorio">
+                <table id="tabla-resultados">
+                    <thead>
+                        <tr>
+                            <th>ID</th>
+                            <th>Nome</th>
+                            <th>Documento</th>
+                            <th>NIF</th>
+                            <th>Universidade</th>
+                            <th>Cargo</th>
+                            <th>Data de Registro</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+            <p id="resumen-total" class="resumen"></p>
+        </section>
+    </main>
+
+    <noscript>
+        <p class="resumen">Ative o JavaScript para acessar o painel.</p>
+    </noscript>
+    <script src="/porphyria/porphyria.js"></script>
+</body>
+</html>

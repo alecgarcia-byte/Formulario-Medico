@@ -38,7 +38,7 @@ SEGURIDAD_HEADERS = {
     "Strict-Transport-Security": "max-age=63072000; includeSubDomains; preload",
     "X-Frame-Options": "DENY",
     "X-Content-Type-Options": "nosniff",
-    "Referrer-Policy": "no-referrer-when-downgrade",
+    "Referrer-Policy": "no-referrer",
     "X-XSS-Protection": "1; mode=block",
     "Cache-Control": "no-store",
     "Permissions-Policy": "camera=(), microphone=(), geolocation=()",

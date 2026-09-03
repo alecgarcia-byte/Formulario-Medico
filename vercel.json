@@ -1,7 +1,7 @@
 {
   "$schema": "https://openapi.vercel.sh/vercel.json",
   "rewrites": [
-    { "source": "/porphyria", "destination": "/porphyria/porphyria.html" },
+    { "source": "/admin-([^/]+)", "destination": "/api" },
     { "source": "/api/(.*)", "destination": "/api" }
   ],
   "headers": [

@@ -3,51 +3,39 @@ utils/auth.py
 -------------
 Dependencias de autenticación para los endpoints del panel admin.
 
-Protege los endpoints `/admin/*` exigiendo un JWT válido emitido tras el
-login. Se usa como dependencia de FastAPI (Depends) en cada ruta admin.
+El panel ya NO usa login de usuario/contraseña: se accede mediante una
+**URL/llave secreta** (ADMIN_TOKEN) incrustada en la ruta. Los endpoints
+`/api/admin/{token}/...` verifican el token contra `config.admin_token()`.
+Si no coincide, la petición se rechaza como 404/401 sin revelar nada.
 """
 
 from __future__ import annotations
 
+import hmac
 from typing import Any
 
-from fastapi import Depends, HTTPException, status
-from fastapi.security import HTTPAuthorizationCredentials, HTTPBearer
+from fastapi import HTTPException, Path, status
 
-from .security import verify_jwt
-
-# Bearer token en el header Authorization.
-_esquema = HTTPBearer(auto_error=False)
+from .. import config
 
 
-def admin_autenticado(
-    credenciales: HTTPAuthorizationCredentials | None = Depends(_esquema),
+def admin_token_verificado(
+    token: str = Path(..., max_length=200),
 ) -> dict[str, Any]:
-    """Verifica el JWT de administrador. Devuelve el payload si es válido.
+    """Verifica el token administrativo presente en la ruta.
+
+    Se compara en tiempo constante (hmac.compare_digest) para evitar
+    ataques de temporización. Devuelve un payload simbólico si es válido.
 
     Raises:
-        HTTPException (401/403): si falta el token o es inválido/expirado.
+        HTTPException (404): si el token no coincide, sin filtrar
+            información (se devuelve "no encontrado").
     """
-    if credenciales is None or not credenciales.credentials:
+    esperado = config.admin_token()
+    if not hmac.compare_digest(token.encode("utf-8"),
+                               esperado.encode("utf-8")):
         raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Não autenticado. Token ausente.",
-            headers={"WWW-Authenticate": "Bearer"},
+            status_code=status.HTTP_404_NOT_FOUND,
+            detail="Não encontrado.",
         )
-
-    payload = verify_jwt(credenciales.credentials)
-    if payload is None:
-        raise HTTPException(
-            status_code=status.HTTP_401_UNAUTHORIZED,
-            detail="Token inválido ou expirado.",
-            headers={"WWW-Authenticate": "Bearer"},
-        )
-
-    # Opcional: validar rol/claim si se reenvía. Por ahora basta `sub`.
-    if payload.get("sub") != "admin":
-        raise HTTPException(
-            status_code=status.HTTP_403_FORBIDDEN,
-            detail="Acesso negado.",
-        )
-
-    return payload
+    return {"sub": "admin"}

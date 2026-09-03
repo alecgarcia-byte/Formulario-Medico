@@ -3,21 +3,54 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <meta name="description" content="Formulário Médico Acadêmico — pesquisa para professores por especialidade. Seus dados são tratados com confidencialidade.">
+    <meta name="theme-color" content="#1E40AF">
+    <link rel="icon" type="image/svg+xml" href="favicon.svg">
     <title>Formulário Médico Acadêmico</title>
+    <link rel="stylesheet" href="pico.min.css">
     <link rel="stylesheet" href="style.css">
 </head>
 <body>
+    <!-- Escena de fondo orgánica (orbes animados, CSS puro) -->
+    <div id="escena-fondo" aria-hidden="true">
+        <i style="width:180px;height:180px;top:8%;left:6%;background:linear-gradient(135deg,rgba(96,165,250,.35),rgba(37,99,235,.08));animation-duration:17s"></i>
+        <i style="width:120px;height:120px;top:22%;right:8%;background:linear-gradient(135deg,rgba(124,58,237,.32),rgba(37,99,235,.06));animation-duration:22s;animation-delay:-4s"></i>
+        <i style="width:90px;height:90px;bottom:16%;left:12%;background:linear-gradient(135deg,rgba(16,185,129,.3),rgba(37,99,235,.05));animation-duration:19s;animation-delay:-8s"></i>
+        <i style="width:140px;height:140px;bottom:10%;right:14%;background:linear-gradient(135deg,rgba(37,99,235,.34),rgba(124,58,237,.07));animation-duration:24s;animation-delay:-2s"></i>
+        <i style="width:70px;height:70px;top:64%;left:28%;background:linear-gradient(135deg,rgba(255,255,255,.5),rgba(96,165,250,.1));animation-duration:15s;animation-delay:-6s"></i>
+    </div>
+    <div class="selector-idioma" role="group" aria-label="Idioma / Language / Idioma">
+        <button type="button" class="idioma-btn" data-idioma="pt" lang="pt" aria-pressed="true">PT</button>
+        <button type="button" class="idioma-btn" data-idioma="es" lang="es" aria-pressed="false">ES</button>
+        <button type="button" class="idioma-btn" data-idioma="en" lang="en" aria-pressed="false">EN</button>
+    </div>
     <div class="container">
         <main>
             <div class="contenedor-formulario">
-                <h1 class="titulo-formulario">Formulário Médico Acadêmico</h1>
-                <p class="subtitulo-general">Pesquisa para professores por especialidade. Seus dados serão tratados com confidencialidade e usados exclusivamente para fins acadêmicos e estatísticos.</p>
+                <h1 class="titulo-formulario" data-i18n="titulo">Formulário Médico Acadêmico</h1>
+                <p class="subtitulo-general" data-i18n="subtitulo">Pesquisa para professores por especialidade. Seus dados serão tratados com confidencialidade e usados exclusivamente para fins acadêmicos e estatísticos.</p>
             </div>
+
+            <!-- Indicador de passos (morphing Liquid) -->
+            <nav class="stepper" aria-label="Progresso do formulário">
+                <span class="step ativo" data-objetivo="secao-dados-pessoais">
+                    <span class="step-num" aria-hidden="true">1</span>
+                    <span data-i18n="paso1">Dados Pessoais</span>
+                </span>
+                <span class="step" data-objetivo="secao-formacao">
+                    <span class="step-num" aria-hidden="true">2</span>
+                    <span data-i18n="paso2">Formação</span>
+                </span>
+                <span class="step" data-objetivo="secao-laboral">
+                    <span class="step-num" aria-hidden="true">3</span>
+                    <span data-i18n="paso3">Laboral</span>
+                </span>
+            </nav>
 
             <form id="formulario" class="espaciado-formulario" novalidate>
 
                 <!-- ==== Seção 1: Dados Pessoais ==== -->
-                <h2 class="subtitulo">Dados Pessoais</h2>
+                <h2 class="subtitulo" id="secao-dados-pessoais" data-i18n="secao1">Dados Pessoais</h2>
 
                 <div class="campo">
                     <label for="nombre" class="etiqueta">Nome Completo</label>
@@ -75,7 +108,7 @@
                 </div>
 
                 <!-- ==== Seção 2: Formação Acadêmica e Profissional ==== -->
-                <h2 class="subtitulo">Formação Acadêmica e Profissional</h2>
+                <h2 class="subtitulo" id="secao-formacao" data-i18n="secao2">Formação Acadêmica e Profissional</h2>
 
                 <div class="campo">
                     <label for="titulo_grado" class="etiqueta">Título de Graduação</label>
@@ -135,7 +168,7 @@
                 </div>
 
                 <!-- ==== Seção 3: Dados Laborais e Institucionais ==== -->
-                <h2 class="subtitulo">Dados Laborais e Institucionais</h2>
+                <h2 class="subtitulo" id="secao-laboral" data-i18n="secao3">Dados Laborais e Institucionais</h2>
 
                 <div class="campo">
                     <label for="cargo_docente" class="etiqueta">Cargo Docente</label>
@@ -162,7 +195,7 @@
                 <div class="campo consentimiento">
                     <label class="etiqueta-consentimiento">
                         <input type="checkbox" id="consentimiento" name="consentimiento" value="aceito" required>
-                        <span>Declaro que entendi as informações sobre a pesquisa e autorizo o tratamento dos meus dados pessoais, de forma confidencial e com finalidade exclusivamente acadêmica e estatística.</span>
+                        <span data-i18n="consentimiento">Declaro que entendi as informações sobre a pesquisa e autorizo o tratamento dos meus dados pessoais, de forma confidencial e com finalidade exclusivamente acadêmica e estatística.</span>
                     </label>
                 </div>
 
