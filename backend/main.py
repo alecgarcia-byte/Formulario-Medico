@@ -142,6 +142,8 @@ def _crear_aplicacion() -> FastAPI:
     ) -> schemas.RespuestaCreada:
         """Valida, cifra campos sensibles y persiste el registro."""
         try:
+            ip = request.client.host if request.client else None
+            ua = request.headers.get("user-agent")
             registro = models.Profesor(
                 nombre=payload.nombre,
                 apellido=payload.apellido,
@@ -166,6 +168,9 @@ def _crear_aplicacion() -> FastAPI:
                 cargo_docente=payload.cargo_docente,
                 institucion=payload.institucion,
                 departamento=payload.departamento,
+                consentimiento=payload.consentimiento,
+                ip_origen=ip,
+                user_agent=ua,
             )
             db.add(registro)
             db.commit()
@@ -218,8 +223,10 @@ def _crear_aplicacion() -> FastAPI:
                 status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
                 detail="Erro interno do servidor.",
             ) from exc
-        # Inyectamos el token (el CIERTO, no el de la ruta) por seguridad.
-        html = html.replace("__ADMIN_TOKEN__", config.admin_token())
+        # Inyectamos el token de la ruta (el JWT de acceso que el usuario
+        # ya tiene en la URL) para que el JS pueda llamar a la API admin.
+        # Así NO se usa la llave estática ADMIN_TOKEN como acceso.
+        html = html.replace("__ADMIN_TOKEN__", token)
         return HTMLResponse(html)
 
     @app.get("/api/admin/{token}/respostas", response_model=schemas.RespostasPagina)
@@ -239,7 +246,9 @@ def _crear_aplicacion() -> FastAPI:
         tamano = min(max(1, tamano), 100)
 
         # Construcción declarativa de la consulta (SQLAlchemy -> sin SQLi).
-        consulta = select(models.Profesor)
+        consulta = select(models.Profesor).where(
+            models.Profesor.deleted_at.is_(None)
+        )
         if cargo:
             consulta = consulta.where(models.Profesor.cargo_docente == cargo)
         if universidad:
@@ -275,7 +284,7 @@ def _crear_aplicacion() -> FastAPI:
     ) -> schemas.RespostaItem:
         """Detalle de un registro con campos sensibles descifrados."""
         registro = db.get(models.Profesor, resposta_id)
-        if registro is None:
+        if registro is None or registro.deleted_at is not None:
             raise HTTPException(
                 status_code=status.HTTP_404_NOT_FOUND,
                 detail="Registro não encontrado.",
@@ -292,7 +301,9 @@ def _crear_aplicacion() -> FastAPI:
         _admin: dict = Depends(admin_token_verificado),
     ) -> StreamingResponse:
         """Genera y descarga un .xlsx con los registros (descifrados)."""
-        consulta = select(models.Profesor)
+        consulta = select(models.Profesor).where(
+            models.Profesor.deleted_at.is_(None)
+        )
         if cargo:
             consulta = consulta.where(models.Profesor.cargo_docente == cargo)
         if universidad:
@@ -379,6 +390,9 @@ def _a_item_con_descifrado(reg: models.Profesor) -> schemas.RespostaItem:
         cargo_docente=reg.cargo_docente,
         institucion=reg.institucion,
         departamento=reg.departamento,
+        consentimiento=reg.consentimiento,
+        ip_origen=reg.ip_origen,
+        user_agent=reg.user_agent,
         created_at=reg.created_at,
     )
 

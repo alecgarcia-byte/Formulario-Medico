@@ -235,6 +235,9 @@ class ProfesorOut(BaseModel):
     cargo_docente: str
     institucion: str | None
     departamento: str | None
+    consentimiento: bool
+    ip_origen: str | None
+    user_agent: str | None
     created_at: datetime
 
 

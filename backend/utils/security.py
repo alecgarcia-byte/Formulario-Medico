@@ -1,15 +1,13 @@
 """
 utils/security.py
 -----------------
-Capas de seguridad del backend (alta prioridad): cifrado AES-256-GCM,
-hashing bcrypt y JWT.
+Capas de seguridad del backend (alta prioridad): cifrado AES-256-GCM y JWT.
 
 Principios aplicados:
 - Ningún secreto hardcodeado: todo proviene de variables de entorno.
 - AES-256 estricto (solo claves de 32 bytes; se rechazan claves débiles).
 - Nonce aleatorio de 96 bits por operación (recomendado por GCM).
 - AAD (associated data) para evitar usos cruzados de los datos cifrados.
-- bcrypt con coste configurable y longitud acotada (evita DoS).
 - Comparación de strings en tiempo constante (hmac.compare_digest).
 - JWT HS256 con validación estricta de header, firma y reclamaciones.
 
@@ -19,10 +17,8 @@ Ventajas de usar AES-GCM vía `cryptography.hazmat` (no Fernet):
 - Flexibilidad sin el overhead/pre-requisitos de Fernet.
 
 Variables de entorno requeridas (ver .env.example):
-- SECRET_KEY_AES     : 32 bytes, en base64. Generar:  openssl rand -base64 32
-- JWT_SECRET         : secreto de firma JWT.  Generar: openssl rand -hex 32
-- ADMIN_USER         : usuario del panel admin.
-- ADMIN_PASSWORD_HASH: hash bcrypt de la contraseña del panel admin.
+- SECRET_KEY_AES : 32 bytes, en base64. Generar:  openssl rand -base64 32
+- JWT_SECRET     : secreto de firma JWT.  Generar: openssl rand -hex 32
 """
 
 from __future__ import annotations
@@ -38,7 +34,6 @@ import secrets
 import time
 from typing import Any, Optional
 
-import bcrypt
 from cryptography.hazmat.primitives.ciphers.aead import AESGCM
 
 from .. import config
@@ -53,8 +48,6 @@ class CifradoError(ValueError):
 # Tamaños y constantes de seguridad ---------------------------------------
 AES_KEY_LEN = 32           # 256 bits (AES-256)
 AES_NONCE_LEN = 12         # 96 bits, recomendado por NIST para GCM
-BCRYPT_COST = 12           # rounds de bcrypt
-BCRYPT_MAX_PASSWORD_LEN = 72  # 72 bytes es el límite de bcrypt
 JWT_ALGORITMO = "HS256"
 JWT_EXPIRACION_MINUTOS = 120
 # Reclamaciones JWT obligatorias
@@ -143,64 +136,6 @@ def decrypt_field(ciphertext_b64: str) -> str:
         ) from exc
 
     return plaintext.decode("utf-8")
-
-
-# --- Hashing bcrypt (contraseña admin) -----------------------------------
-
-
-def hash_password(password: str) -> str:
-    """Genera un hash bcrypt de la contraseña (coste configurable)."""
-    _validar_password_digest(password)
-    return bcrypt.hashpw(
-        password.encode("utf-8"), bcrypt.gensalt(rounds=BCRYPT_COST)
-    ).decode("ascii")
-
-
-def verify_password(password: str, hashed: str) -> bool:
-    """Verifica una contraseña contra su hash bcrypt en tiempo constante."""
-    if not isinstance(password, str) or not isinstance(hashed, str):
-        return False
-    try:
-        # bcrypt trunca a 72 bytes; validamos para evitar DoS por entrada larga.
-        if len(password.encode("utf-8")) > BCRYPT_MAX_PASSWORD_LEN:
-            return False
-        return bcrypt.checkpw(
-            password.encode("utf-8"), hashed.encode("utf-8")
-        )
-    except (ValueError, TypeError):
-        return False
-
-
-def _validar_password_digest(password: str) -> None:
-    """Valida la contraseña antes de hashear (evita entradas extremas)."""
-    if not isinstance(password, str):
-        raise TypeError("La contraseña debe ser una cadena.")
-    if len(password.encode("utf-8")) > BCRYPT_MAX_PASSWORD_LEN:
-        raise ValueError(
-            f"La contraseña no puede exceder {BCRYPT_MAX_PASSWORD_LEN} bytes."
-        )
-
-
-def es_password_admin(usuario: str, password: str) -> bool:
-    """Valida credenciales de administrador de forma segura.
-
-    Compara el usuario en tiempo constante y verifica la contraseña
-    contra el hash bcrypt almacenado en ADMIN_PASSWORD_HASH.
-    Devuelve False en cualquier fallo sin filtrar información.
-    """
-    try:
-        expected_user, expected_hash = config.credenciales_admin()
-    except RuntimeError:
-        return False
-
-    if not isinstance(usuario, str) or not isinstance(password, str):
-        return False
-
-    usuario_ok = hmac.compare_digest(usuario.encode("utf-8"),
-                                     expected_user.encode("utf-8"))
-    if not usuario_ok:
-        return False
-    return verify_password(password, expected_hash)
 
 
 # --- JWT (autenticación admin) -------------------------------------------

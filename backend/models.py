@@ -123,6 +123,19 @@ class Profesor(Base):
         String(100), nullable=True
     )
 
+    # --- Consentimiento informado (RGPD/LGPD) ---
+    consentimiento: Mapped[bool] = mapped_column(
+        nullable=False, default=False
+    )
+
+    # --- Trazabilidad de la petición ---
+    ip_origen: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True   # IPv4 (15) o IPv6 (45)
+    )
+    user_agent: Mapped[Optional[str]] = mapped_column(
+        Text, nullable=True
+    )
+
     # --- Auditoría ---
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False
@@ -132,4 +145,40 @@ class Profesor(Base):
         default=_utcnow,
         onupdate=_utcnow,
         nullable=False,
+    )
+    # Soft delete (nunca se borran datos médicos)
+    deleted_at: Mapped[Optional[datetime]] = mapped_column(
+        DateTime(timezone=True), nullable=True
+    )
+
+
+class AdminSession(Base):
+    """Sesión de acceso al panel admin (JWT jti) para permitir revocación.
+
+    Cada URL de acceso JWT registra aquí su `jti`. Si `revocado` es True,
+    el acceso queda invalidado aunque el token no haya expirado.
+    """
+
+    __tablename__ = "admin_sessions"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUIDChar, primary_key=True, default=uuid.uuid4
+    )
+    # En el acceso por URL no hay usuario admin; se deja NULL.
+    admin_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUIDChar, nullable=True
+    )
+    token_jti: Mapped[str] = mapped_column(String(36), unique=True, nullable=False)
+    ip_origen: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True
+    )
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    expira_en: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), nullable=False
+    )
+    revocado: Mapped[bool] = mapped_column(
+        nullable=False, default=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False
     )

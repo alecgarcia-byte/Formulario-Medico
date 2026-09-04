@@ -4,8 +4,8 @@ conftest.py
 Fixtures compartidas de pytest para el backend.
 
 Antes de importar `backend.main` se configuran variables de entorno (clave
-AES, secreto JWT, token admin) con valores seguros de prueba y una
-base SQLite en memoria para aislar los tests.
+AES, secreto JWT, token admin) con valores seguros de prueba y una base
+SQLite en memoria para aislar los tests.
 """
 
 from __future__ import annotations
@@ -24,6 +24,11 @@ from fastapi.testclient import TestClient
 # con check_same_thread=False, compatible con TestClient.
 os.environ.setdefault("DATABASE_URL", "")
 
+# Uso un entorno "test": NO es producción, pero para comprobar el mecanismo
+# JWT real (y no caer en el fallback de la llave estática) emitimos una URL
+# de acceso JWT y la usamos como TOKEN de los tests de admin.
+os.environ.setdefault("ENVIRONMENT", "test")
+
 # Aislamos la DB de los tests en un archivo temporal y único; se elimina
 # automáticamente al final de la sesión. Así no dejamos `formulario_local.db`
 # ni datos de prueba en la raíz del proyecto.
@@ -40,8 +45,7 @@ os.environ.setdefault(
 )
 os.environ.setdefault("JWT_SECRET", "clave-de-test-" + "x" * 30)
 
-# Token/llave de acceso al panel admin (URL secreta). Mín. 20 caracteres.
-# Debe coincidir con la constante TOKEN de test_admin.py.
+# Llave estática (solo desarrollo). Los tests del admin usan un JWT emitido.
 os.environ.setdefault("ADMIN_TOKEN", "test-admin-token-12345678901234567890")
 
 # Permitimos importar el paquete backend desde la raíz del proyecto.
@@ -52,9 +56,14 @@ if _PROYECTO not in sys.path:
 
 from backend.database import Base, engine, get_session  # noqa: E402
 from backend.main import app  # noqa: E402
+from backend.utils.auth import emitir_jwt_acceso  # noqa: E402
 
 # Creamos las tablas sobre la BD en memoria.
 Base.metadata.create_all(bind=engine)
+
+# URL de acceso JWT real emitida para los tests (el mecanismo que usará el
+# panel en producción). Se usa en test_admin.py como TOKEN.
+TOKEN_ADMIN_JWT = emitir_jwt_acceso()
 
 
 @pytest.fixture(scope="session")
@@ -62,6 +71,12 @@ def client():
     """TestClient con la app real; cada petición usa una sesión de BD limpia."""
     with TestClient(app, raise_server_exceptions=False) as c:
         yield c
+
+
+@pytest.fixture(scope="session")
+def token_admin():
+    """URL/llave de acceso válida al panel admin (JWT emitido)."""
+    return TOKEN_ADMIN_JWT
 
 
 # --- Datos de ejemplo de un profesor válido ---

@@ -1,7 +1,7 @@
 """
 test_seguridad.py
------------------
-Pruebas unitarias de utils/security.py: cifrado AES-256-GCM, bcrypt y JWT.
+------------------
+Pruebas unitarias de utils/security.py: cifrado AES-256-GCM y JWT.
 """
 
 from __future__ import annotations
@@ -15,10 +15,7 @@ from backend.utils.security import (
     create_jwt,
     decrypt_field,
     encrypt_field,
-    es_password_admin,
-    hash_password,
     verify_jwt,
-    verify_password,
 )
 
 
@@ -49,34 +46,6 @@ class TestCifrado:
     def test_vacio_rechazado(self):
         with pytest.raises(CifradoError):
             encrypt_field("")
-
-
-# =============================== bcrypt ===================================
-
-
-class TestPassword:
-    def test_hash_y_verificacion(self):
-        h = hash_password("mi-clave")
-        assert verify_password("mi-clave", h) is True
-        assert verify_password("otra-clave", h) is False
-
-    def test_hash_diferentes_por_sal(self):
-        # Cada hash tiene sal distinta, aunque la contraseña sea la misma.
-        assert hash_password("x") != hash_password("x")
-
-    def test_es_password_admin_correcto(self):
-        h = hash_password("pass-admin-tests")
-        import os
-
-        os.environ["ADMIN_USER"] = "admin"
-        os.environ["ADMIN_PASSWORD_HASH"] = h
-        assert es_password_admin("admin", "pass-admin-tests") is True
-        assert es_password_admin("admin", "incorrecta") is False
-        assert es_password_admin("otro", "pass-admin-tests") is False
-
-    def test_es_password_admin_sin_config(self, monkeypatch):
-        monkeypatch.delenv("ADMIN_PASSWORD_HASH", raising=False)
-        assert es_password_admin("admin", "cualquier") is False
 
 
 # ================================ JWT ====================================
