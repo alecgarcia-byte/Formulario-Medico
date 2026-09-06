@@ -28,7 +28,12 @@
                 secao1: "Dados Pessoais",
                 secao2: "Formação Acadêmica e Profissional",
                 secao3: "Dados Laborais e Institucionais",
-                consentimiento: "Declaro que entendi as informações sobre a pesquisa e autorizo o tratamento dos meus dados pessoais, de forma confidencial e com finalidade exclusivamente acadêmica e estatística.",
+                consentimientoTitulo: "Consentimento Informado",
+                consentimientoLead: "Declaro que entendi as informações sobre a pesquisa e que fui esclarecido quanto ao tratamento dos meus dados pessoais, nas seguintes condições:",
+                consentimientoI1: "Tratamento de dados de forma estritamente confidencial;",
+                consentimientoI2: "Utilização exclusivamente com finalidade acadêmica e estatística;",
+                consentimientoI3: "Ausência de qualquer finalidade comercial ou de identificação individual.",
+                consentimientoObrigatorio: "A sua participação é voluntária. É necessário marcar esta caixa para enviar o formulário.",
                 enviar: "Enviar",
                 loading: "Enviando",
                 loadingEstado: "Enviando, aguarde..."
@@ -70,7 +75,7 @@
                 patronNumero: "Use somente números (mín. {min}, máx. {max} caracteres).",
                 patronTelefono: "Use um número de telefone válido (mín. {min}, máx. {max} caracteres).",
                 patronTexto: "Texto inválido (mín. {min}, máx. {max} caracteres).",
-                consentimiento: "É necessário aceitar o consentimento informado.",
+                consentimiento: "Para enviar, é necessário aceitar o consentimento informado.",
                 corrigir: "Corrija os campos indicados: ",
                 exito: "Formulário enviado com sucesso. Obrigado pela sua participação!",
                 erroEnviar: "Não foi possível enviar o formulário.",
@@ -87,7 +92,12 @@
                 secao1: "Datos Personales",
                 secao2: "Formación Académica y Profesional",
                 secao3: "Datos Laborales e Institucionales",
-                consentimiento: "Declaro que he entendido la información sobre la investigación y autorizo el tratamiento de mis datos personales, de forma confidencial y con finalidad exclusivamente académica y estadística.",
+                consentimientoTitulo: "Consentimiento Informado",
+                consentimientoLead: "Declaro que he entendido la información sobre la investigación y que he sido informado sobre el tratamiento de mis datos personales, bajo las siguientes condiciones:",
+                consentimientoI1: "Tratamiento de los datos de forma estrictamente confidencial;",
+                consentimientoI2: "Utilización exclusivamente con finalidad académica y estadística;",
+                consentimientoI3: "Ausencia de cualquier finalidad comercial o de identificación individual.",
+                consentimientoObrigatorio: "Su participación es voluntaria. Es necesario marcar esta casilla para enviar el formulario.",
                 enviar: "Enviar",
                 loading: "Enviando",
                 loadingEstado: "Enviando, espere..."
@@ -129,7 +139,7 @@
                 patronNumero: "Use solo números (mín. {min}, máx. {max} caracteres).",
                 patronTelefono: "Use un número de teléfono válido (mín. {min}, máx. {max} caracteres).",
                 patronTexto: "Texto no válido (mín. {min}, máx. {max} caracteres).",
-                consentimiento: "Es necesario aceptar el consentimiento informado.",
+                consentimiento: "Para enviar, es necesario aceptar el consentimiento informado.",
                 corrigir: "Corrija los campos indicados: ",
                 exito: "Formulario enviado con éxito. ¡Gracias por su participación!",
                 erroEnviar: "No fue posible enviar el formulario.",
@@ -146,7 +156,12 @@
                 secao1: "Personal Data",
                 secao2: "Academic and Professional Education",
                 secao3: "Work and Institutional Data",
-                consentimiento: "I declare that I have understood the information about the research and authorize the processing of my personal data, confidentially and exclusively for academic and statistical purposes.",
+                consentimientoTitulo: "Informed Consent",
+                consentimientoLead: "I declare that I have understood the information about the research and that I have been informed about the processing of my personal data under the following conditions:",
+                consentimientoI1: "Processing of data strictly confidentially;",
+                consentimientoI2: "Use exclusively for academic and statistical purposes;",
+                consentimientoI3: "No commercial purpose or individual identification.",
+                consentimientoObrigatorio: "Your participation is voluntary. You must check this box to submit the form.",
                 enviar: "Submit",
                 loading: "Sending",
                 loadingEstado: "Sending, please wait..."
@@ -188,7 +203,7 @@
                 patronNumero: "Use numbers only (min. {min}, max. {max} characters).",
                 patronTelefono: "Enter a valid phone number (min. {min}, max. {max} characters).",
                 patronTexto: "Invalid text (min. {min}, max. {max} characters).",
-                consentimiento: "You must accept the informed consent.",
+                consentimiento: "You must accept the informed consent to submit.",
                 corrigir: "Correct the indicated fields: ",
                 exito: "Form submitted successfully. Thank you for your participation!",
                 erroEnviar: "The form could not be sent.",
@@ -267,11 +282,36 @@
             }
         });
 
-        // Etiquetas de los campos (label for = name).
-        Object.keys(d.etiquetas).forEach(function (name) {
+        // Etiquetas de los campos (label for = name). Se añade el marcador
+        // "*" a los obligatorios según REGLAS (fuente única de verdad).
+        Object.keys(REGLAS).forEach(function (name) {
             const label = document.querySelector('label[for="' + name + '"]');
-            if (label) label.textContent = d.etiquetas[name];
+            if (!label) return;
+            label.textContent =
+                (d.etiquetas && d.etiquetas[name]) || REGLAS[name].etiqueta || name;
+            if (REGLAS[name].requerido) {
+                const req = document.createElement("span");
+                req.className = "requerido";
+                req.setAttribute("aria-hidden", "true");
+                req.textContent = "*";
+                label.appendChild(req);
+            }
         });
+
+        // Consentimiento: checkbox obligatorio (se valida aparte de REGLAS).
+        const labelConsentimiento = document.querySelector("label.etiqueta-consentimiento");
+        if (labelConsentimiento && !labelConsentimiento.querySelector(".requerido")) {
+            const req = document.createElement("span");
+            req.className = "requerido";
+            req.setAttribute("aria-hidden", "true");
+            req.textContent = "*";
+            const inputCons = labelConsentimiento.querySelector('input[name="consentimiento"]');
+            if (inputCons && inputCons.nextSibling) {
+                labelConsentimiento.insertBefore(req, inputCons.nextSibling);
+            } else {
+                labelConsentimiento.appendChild(req);
+            }
+        }
 
         // Placeholders.
         Object.keys(d.placeholders).forEach(function (name) {
@@ -746,9 +786,11 @@
             return null;
         }
 
-        /* -- Aplica clases de error visual y recopila mensajes. -- */
+/* -- Aplica clases de error visual y recopila mensajes. -- */
         marcarErrores() {
-            Object.keys(REGLAS).forEach((campo) => {
+            const nombres = new Set(Object.keys(REGLAS));
+            nombres.add("consentimiento");
+            nombres.forEach((campo) => {
                 const el = this.form.elements[campo];
                 if (!el) return;
                 if (this.errores.has(campo)) {
@@ -763,9 +805,12 @@
         async onSubmit(event) {
             event.preventDefault();
 
+            // Si falta un obligatorio se avisa: marcado en rojo + resumen, y se
+            // acerca el scroll hasta el primer campo con error.
             if (!this.validar()) {
                 const mensajes = Array.from(this.errores.values());
                 this.mostrarEstado("error", t("corrigir") + mensajes.join(" "));
+                this._enfocarPrimerError();
                 return;
             }
 
@@ -780,6 +825,10 @@
                 el.classList.remove("invalido");
                 this.actualizarContador(el);
                 this.actualizarCheck(el);
+                if (el.name === "consentimiento") {
+                    const cons = this.form.querySelector(".consentimiento");
+                    if (cons) cons.classList.remove("invalido");
+                }
             }
         }
 
@@ -817,21 +866,33 @@
                     this.limpiarErrores();
                     this.mostrarEstado("exito", t("exito"));
                 } else {
-                    let detalle = t("erroEnviar");
-                    try {
-                        const err = await respuesta.json();
-                        if (err && (err.detail || err.message)) {
-                            detalle = String(err.detail || err.message);
-                        }
-                    } catch (_e) {
-                        /* ignora cuerpo no JSON */
-                    }
-                    this.mostrarEstado("error", detalle);
+                    this._ir404();
                 }
             } catch (error) {
-                this.mostrarEstado("error", t("erroConexao"));
+                this._ir404();
             } finally {
                 this.boton.disabled = false;
+            }
+        }
+
+        /* -- Cualquier error se traduce en una página 404 para el usuario. -- */
+        _ir404() {
+            window.location.replace("/404.html");
+        }
+
+        /* -- Lleva el scroll (y el foco) hasta el primer campo inválido. -- */
+        _enfocarPrimerError() {
+            const primero = this.form.querySelector(".invalido");
+            if (!primero) return;
+            try {
+                primero.scrollIntoView({ behavior: "smooth", block: "center" });
+            } catch (_e) {
+                primero.scrollIntoView();
+            }
+            try {
+                primero.focus({ preventScroll: true });
+            } catch (_e) {
+                primero.focus();
             }
         }
 
@@ -910,6 +971,8 @@
                 const el = this.form.elements[campo];
                 if (el) el.classList.remove("invalido");
             });
+            const cons = this.form.querySelector(".consentimiento");
+            if (cons) cons.classList.remove("invalido");
         }
     }
 

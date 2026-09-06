@@ -49,7 +49,7 @@ def _main() -> None:
 
     base = (app_config.frontend_url() or "").rstrip("/")
     if not base:
-        base = "https://formulario-medico.vercel.app"
+        base = "https://formulario-medico-academico.vercel.app"
         print("AVISO: FRONTEND_URL no configurado; se usa el dominio base por defecto.")
 
     token = emitir_jwt_acceso(

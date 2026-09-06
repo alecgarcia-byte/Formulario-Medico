@@ -21,6 +21,7 @@ import logging
 from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
+from fastapi.exceptions import RequestValidationError
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
 from fastapi.staticfiles import StaticFiles
@@ -144,6 +145,17 @@ def _crear_aplicacion() -> FastAPI:
         return JSONResponse(
             status_code=status.HTTP_500_INTERNAL_SERVER_ERROR,
             content={"detail": "Erro interno do servidor."},
+        )
+
+    @app.exception_handler(RequestValidationError)
+    async def manejar_validation_error(
+        request: Request, exc: RequestValidationError
+    ) -> JSONResponse:
+        # Los errores de validación no se exponen al usuario: se responde
+        # un 404 genérico sin detalles de qué campo falló ni por qué.
+        return JSONResponse(
+            status_code=status.HTTP_404_NOT_FOUND,
+            content={"detail": "Not Found"},
         )
 
     # --- Endpoint: recibir formulario ---

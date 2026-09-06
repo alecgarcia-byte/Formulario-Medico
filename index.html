@@ -193,9 +193,23 @@
 
                 <!-- ==== Consentimento informado ==== -->
                 <div class="campo consentimiento">
+                    <div class="consentimiento-cabecera">
+                        <span class="consentimiento-icono" aria-hidden="true">
+                            <svg viewBox="0 0 24 24" width="22" height="22" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round"><path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/></svg>
+                        </span>
+                        <span class="consentimiento-titulo" data-i18n="consentimientoTitulo">Consentimento Informado</span>
+                    </div>
                     <label class="etiqueta-consentimiento">
                         <input type="checkbox" id="consentimiento" name="consentimiento" value="aceito" required>
-                        <span data-i18n="consentimiento">Declaro que entendi as informações sobre a pesquisa e autorizo o tratamento dos meus dados pessoais, de forma confidencial e com finalidade exclusivamente acadêmica e estatística.</span>
+                        <span class="consentimiento-texto">
+                            <strong data-i18n="consentimientoLead">Declaro que entendi as informações sobre a pesquisa e que fui esclarecido quanto ao tratamento dos meus dados pessoais, nas seguintes condições:</strong>
+                            <span class="consentimiento-itens">
+                                <span data-i18n="consentimientoI1">Tratamento de dados de forma estritamente confidencial;</span>
+                                <span data-i18n="consentimientoI2">Utilização exclusivamente com finalidade acadêmica e estatística;</span>
+                                <span data-i18n="consentimientoI3">Ausência de qualquer finalidade comercial ou de identificação individual.</span>
+                            </span>
+                            <span class="consentimiento-obrigatorio" data-i18n="consentimientoObrigatorio">A sua participação é voluntária. É necessário marcar esta caixa para enviar o formulário.</span>
+                        </span>
                     </label>
                 </div>
 

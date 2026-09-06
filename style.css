@@ -532,6 +532,23 @@ body:has(.espaciado-formulario:focus-within)::after {
     animation: agitar 0.35s ease;
 }
 
+/* Indicador de campo obligatorio */
+.requerido {
+    color: var(--color-error);
+    font-weight: 700;
+    margin-left: 2px;
+}
+
+/* Error visible en el bloque de consentimiento */
+.consentimiento input[type="checkbox"].invalido {
+    outline: 2px solid var(--color-error);
+    outline-offset: 2px;
+}
+
+.consentimiento input.invalido ~ .consentimiento-texto {
+    color: var(--color-error);
+}
+
 @keyframes agitar {
     0%, 100% { transform: translateX(0); }
     25% { transform: translateX(-5px); }
@@ -595,6 +612,105 @@ select.entrada {
     accent-color: var(--color-azul-2);
     flex-shrink: 0;
     border-radius: 8px;
+}
+
+.consentimiento-cabecera {
+    display: flex;
+    align-items: center;
+    gap: 0.55rem;
+    margin-bottom: 0.85rem;
+    padding-bottom: 0.7rem;
+    border-bottom: 1px solid rgba(96, 165, 250, 0.35);
+}
+
+.consentimiento-icono {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 2.2rem;
+    height: 2.2rem;
+    border-radius: 12px;
+    color: #ffffff;
+    background: linear-gradient(135deg, var(--color-azul-1), var(--color-azul-2));
+    box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+    flex-shrink: 0;
+}
+
+.consentimiento-titulo {
+    font-size: 1rem;
+    font-weight: 800;
+    letter-spacing: 0.01em;
+    color: var(--color-azul-2);
+    text-transform: uppercase;
+}
+
+.etiqueta-consentimiento {
+    display: flex;
+    align-items: flex-start;
+    gap: 0.75rem;
+    font-size: 0.9rem;
+    line-height: 1.55;
+    color: var(--color-texto);
+    cursor: pointer;
+}
+
+.consentimiento-texto {
+    display: flex;
+    flex-direction: column;
+    gap: 0.7rem;
+}
+
+.consentimiento-texto > strong {
+    font-weight: 700;
+}
+
+.consentimiento-itens {
+    display: flex;
+    flex-direction: column;
+    gap: 0.35rem;
+    padding-left: 0.2rem;
+}
+
+.consentimiento-itens > span {
+    position: relative;
+    padding-left: 1.1rem;
+}
+
+.consentimiento-itens > span::before {
+    content: "";
+    position: absolute;
+    left: 0;
+    top: 0.55em;
+    width: 0.45rem;
+    height: 0.45rem;
+    border-radius: 50%;
+    background: linear-gradient(135deg, var(--color-azul-2), #7C3AED);
+}
+
+.consentimiento-itens b {
+    font-weight: 700;
+    color: var(--color-azul-2);
+}
+
+.consentimiento-obrigatorio {
+    margin-top: 0.25rem;
+    padding: 0.55rem 0.8rem;
+    border-radius: 12px;
+    background: rgba(37, 99, 235, 0.08);
+    border-left: 3px solid var(--color-azul-2);
+    font-size: 0.82rem;
+    color: rgba(30, 64, 175, 0.95);
+}
+
+.consentimiento.invalido {
+    border-color: #dc2626;
+    box-shadow: 0 0 0 4px rgba(220, 38, 38, 0.12);
+}
+
+.consentimiento.invalido .consentimiento-obrigatorio {
+    background: rgba(220, 38, 38, 0.08);
+    border-left-color: #dc2626;
+    color: #b91c1c;
 }
 
 /* ---------- 7. Botón enviar (morphing pill) ---------- */
