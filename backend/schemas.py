@@ -88,9 +88,9 @@ class ProfesorIn(BaseModel):
 
     titulo_grado: str = Field(min_length=2, max_length=100)
     universidad: str = Field(min_length=2, max_length=100)
-    ano_graduacion: int = Field(ge=1900, le=2100)
+    ano_graduacion: int = Field(ge=1900, le=2026)
     titulo_especialidad: str = Field(min_length=2, max_length=100)
-    ano_especialidad: int = Field(ge=1900, le=2100)
+    ano_especialidad: int = Field(ge=1900, le=2026)
     subespecialidad: str | None = Field(None, max_length=100)
     grado_academico: GradoAcademico
     registro_profesional: str = Field(min_length=3, max_length=20)

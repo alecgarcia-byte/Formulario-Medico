@@ -467,8 +467,8 @@
             requerido: true,
             tipo: "anio",
             min: 1900,
-            max: 2100,
-            mensaje: "Informe um ano válido (1900–2100)."
+            max: 2026,
+            mensaje: "Informe um ano válido (1900–2026)."
         },
         titulo_especialidad: {
             etiqueta: "Título de Especialidade",
@@ -483,8 +483,8 @@
             requerido: true,
             tipo: "anio",
             min: 1900,
-            max: 2100,
-            mensaje: "Informe um ano válido (1900–2100)."
+            max: 2026,
+            mensaje: "Informe um ano válido (1900–2026)."
         },
         subespecialidad: {
             etiqueta: "Subespecialidade",
@@ -749,12 +749,16 @@
                 return tpl("excede", { max: LONGITUD_MAX_GLOBAL });
             }
 
-            // Límites de longitud según la regla.
-            if (typeof regla.max === "number" && valor.length > regla.max) {
-                return tpl("maxCar", { max: regla.max });
-            }
-            if (typeof regla.min === "number" && regla.min > 0 && valor.length < regla.min) {
-                return tpl("minCar", { min: regla.min });
+            // Límites de longitud según la regla. Solo se aplican a campos de
+            // texto/email: en "anio" y "entero", min/max son VALORES y se
+            // validan en el switch inferior (evita "minCar" falso en años).
+            if (regla.tipo !== "anio" && regla.tipo !== "entero") {
+                if (typeof regla.max === "number" && valor.length > regla.max) {
+                    return tpl("maxCar", { max: regla.max });
+                }
+                if (typeof regla.min === "number" && regla.min > 0 && valor.length < regla.min) {
+                    return tpl("minCar", { min: regla.min });
+                }
             }
 
             // Validación por tipo.

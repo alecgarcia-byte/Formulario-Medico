@@ -48,10 +48,10 @@ CREATE TABLE IF NOT EXISTS professores (
     titulo_grado                VARCHAR(100)  NOT NULL,
     universidad                 VARCHAR(100)  NOT NULL,
     ano_graduacion              INTEGER       NOT NULL
-                                        CHECK (ano_graduacion BETWEEN 1900 AND 2100),
+                                        CHECK (ano_graduacion BETWEEN 1900 AND 2026),
     titulo_especialidad         VARCHAR(100)  NOT NULL,
     ano_especialidad            INTEGER       NOT NULL
-                                        CHECK (ano_especialidad BETWEEN 1900 AND 2100),
+                                        CHECK (ano_especialidad BETWEEN 1900 AND 2026),
     subespecialidad             VARCHAR(100),
     grado_academico             VARCHAR(30)   NOT NULL
                                         CHECK (grado_academico IN (
