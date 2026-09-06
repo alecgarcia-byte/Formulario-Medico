@@ -22,7 +22,8 @@ from pathlib import Path
 
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
-from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.responses import FileResponse, HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -93,10 +94,12 @@ def _crear_aplicacion() -> FastAPI:
         title="Formulário Médico Acadêmico API",
         description="API de recolección de datos médicos y académicos de profesores.",
         version="1.0.0",
-        # En producción deshabilitamos la documentación interactiva para
-        # reducir superficie de exposición. En dev queda disponible.
+        # En producción deshabilitamos la documentación interactiva y el
+        # esquema OpenAPI para reducir superficie de exposición. En dev
+        # quedan disponibles para depurar.
         docs_url=None if produccion else "/docs",
         redoc_url=None,
+        openapi_url=None if produccion else "/openapi.json",
     )
 
     # CORS: solo orígenes permitidos (nunca "*"). Ajustable por variable.
@@ -382,6 +385,69 @@ def _crear_aplicacion() -> FastAPI:
                 "Content-Disposition": f'attachment; filename="{nombre}"'
             },
         )
+
+    # ==================================================================
+    # Frontend servido por el propio backend. El runtime de Vercel para
+    # proyectos "backend framework" enruta TODAS las peticiones a la
+    # función con la ruta original, así que la API también sirve la web
+    # y sus assets (sin depender de rewrites, que ahora cambian la ruta).
+    # ==================================================================
+    _raiz_proyecto = Path(__file__).resolve().parent.parent
+
+    _ESTATICOS = {
+        "/": ("index.html", "text/html; charset=utf-8"),
+        "/index.html": ("index.html", "text/html; charset=utf-8"),
+        "/app.js": ("app.js", "application/javascript; charset=utf-8"),
+        "/style.css": ("style.css", "text/css; charset=utf-8"),
+        "/pico.min.css": ("pico.min.css", "text/css; charset=utf-8"),
+        "/favicon.svg": ("favicon.svg", "image/svg+xml"),
+        "/404.html": ("404.html", "text/html; charset=utf-8"),
+        "/404.js": ("404.js", "application/javascript; charset=utf-8"),
+    }
+
+    def _servidor_estatico(nombre: str, media: str):
+        def _servir() -> FileResponse:
+            return FileResponse(
+                _raiz_proyecto / nombre,
+                media_type=media,
+            )
+        return _servir
+
+    for _ruta, (_archivo, _media) in _ESTATICOS.items():
+        app.get(_ruta, include_in_schema=False)(
+            _servidor_estatico(_archivo, _media)
+        )
+
+    # Assets del panel admin (nombres no adivinables). Si el archivo no
+    # existe, StaticFiles devuelve 404 y no se revela el panel.
+    _carpeta_porphyria = _raiz_proyecto / "porphyria"
+    if _carpeta_porphyria.is_dir():
+        app.mount(
+            "/porphyria",
+            StaticFiles(directory=_carpeta_porphyria),
+            name="porphyria",
+        )
+
+    # ---------- Página 404 personalizada para el resto ----------
+    @app.get("/{ruta:path}", include_in_schema=False)
+    def _no_encontrada(request: Request, ruta: str) -> HTMLResponse:
+        # Las rutas de API inexistentes devuelven JSON (comportamiento
+        # estándar de FastAPI); el resto, la página 404 del sitio.
+        if ruta == "" or ruta.startswith(("api/", "admin-")):
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Not Found",
+            )
+        try:
+            contenido = (_raiz_proyecto / "404.html").read_text(
+                encoding="utf-8"
+            )
+        except OSError:
+            raise HTTPException(
+                status_code=status.HTTP_404_NOT_FOUND,
+                detail="Not Found",
+            )
+        return HTMLResponse(contenido, status_code=404)
 
     return app
 
