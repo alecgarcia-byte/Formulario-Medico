@@ -1,0 +1,34 @@
+# =========================================================
+# Deploy a Vercel: NO subir/servir estos archivos.
+# (No afecta a git; es solo para la compilación/deploy)
+# =========================================================
+
+# Secretos locales (nunca en el bundle de producción)
+.env
+.env*
+!.env.example
+backend/.env.example
+
+# Documentación / repositorio (no son parte del sitio)
+docs/
+md/
+*.md
+LICENSE
+README.md
+
+# Esquema SQL (gestionado en Supabase, no se sirve)
+schema_supabase.sql
+
+# Scripts de administración del desarrollador
+emitir_url_admin.py
+
+# Tests (no necesarios en runtime)
+backend/tests/
+backend/pytest.ini
+
+# Control de versiones y locales
+.git/
+.gitignore
+.gitattributes
+.vercelignore
+Thumbs.db

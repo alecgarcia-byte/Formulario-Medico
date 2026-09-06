@@ -23,7 +23,6 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
-from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -117,13 +116,6 @@ def _crear_aplicacion() -> FastAPI:
     )
 
     app.add_middleware(SeguridadHeadersMiddleware)
-
-    # Assets del panel admin (CSS/JS). En Vercel los sirve el CDN como
-    # estáticos; en local uvicorn también los sirve desde aquí (robustez).
-    _raiz = Path(__file__).resolve().parent.parent
-    _carpeta_porphyria = _raiz / "porphyria"
-    if _carpeta_porphyria.is_dir():
-        app.mount("/porphyria", StaticFiles(directory=_carpeta_porphyria), name="porphyria")
 
     # --- Manejo centralizado de errores ---
     @app.exception_handler(HTTPException)
@@ -395,13 +387,13 @@ def _crear_aplicacion() -> FastAPI:
 
 
 def _leer_panel_admin() -> str:
-    """Lee el HTML del panel admin (plantilla) desde la raíz del proyecto.
+    """Lee la plantilla del panel admin desde `backend/templates/`.
 
-    El archivo contiene el marcador `__ADMIN_TOKEN__` que el endpoint
-    `panel_admin_html` reemplaza con el token real antes de servirlo.
+    NO se sirve como archivo estático público: el HTML solo se genera en el
+    endpoint `/admin-{token}` previa verificación del JWT de acceso. Contiene
+    el marcador `__ADMIN_TOKEN__` que se reemplaza con el token real.
     """
-    raiz = Path(__file__).resolve().parent.parent
-    ruta = raiz / "porphyria" / "panel_admin.html"
+    ruta = Path(__file__).resolve().parent / "templates" / "panel_admin.html"
     return ruta.read_text(encoding="utf-8")
 
 

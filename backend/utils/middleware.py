@@ -74,15 +74,14 @@ class SeguridadHeadersMiddleware:
         ip = self._obtener_ip(request)
         ruta = scope.get("path", "")
 
-        # El panel/admin (protegido por token JWT único) fuera del rate limit.
-        if (
+        # El panel/admin (protegido por token JWT único) queda fuera del rate
+        # limit por IP, pero SÍ recibe los security headers (no-reveal).
+        es_ruta_admin = (
             ruta.startswith(RUTAS_SIN_LIMITE[0])
             or ruta.startswith(RUTAS_SIN_LIMITE[1])
-        ):
-            await self.app(scope, receive, send)
-            return
+        )
 
-        if self._limitar(ip):
+        if not es_ruta_admin and self._limitar(ip):
             cuerpo = b"Too many requests. Tente novamente em instantes."
             await self._enviar_respuesta(
                 scope, receive, send, status_code=429, cuerpo=cuerpo
