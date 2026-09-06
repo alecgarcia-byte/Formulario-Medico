@@ -805,11 +805,10 @@
         async onSubmit(event) {
             event.preventDefault();
 
-            // Si falta un obligatorio se avisa: marcado en rojo + resumen, y se
-            // acerca el scroll hasta el primer campo con error.
+            // Si falta un obligatorio se avisa: marcado en rojo + lista de
+            // errores legible, y se acerca el scroll al primer campo.
             if (!this.validar()) {
-                const mensajes = Array.from(this.errores.values());
-                this.mostrarEstado("error", t("corrigir") + mensajes.join(" "));
+                this.mostrarErrores();
                 this._enfocarPrimerError();
                 return;
             }
@@ -894,6 +893,27 @@
             } catch (_e) {
                 primero.focus();
             }
+        }
+
+        /* -- Muestra los errores de validación en una lista legible. -- */
+        mostrarErrores() {
+            const items = [];
+            this.errores.forEach((mensaje, campo) => {
+                const etiqueta =
+                    (REGLAS[campo] && REGLAS[campo].etiqueta) ||
+                    (campo === "consentimiento" ? t("consentimientoTitulo") : campo);
+                items.push(
+                    "<li><strong>" + escapeHTML(etiqueta) + "</strong><span>" +
+                    escapeHTML(mensaje) + "</span></li>"
+                );
+            });
+            this.estado.className = "estado visible estado-error";
+            this.boton.classList.remove("btn-carga");
+            this.boton.textContent = t("enviar");
+            this.estado.innerHTML =
+                '<p class="errores-titulo">' + t("corrigir") + "</p>" +
+                '<ul class="lista-errores">' + items.join("") + "</ul>";
+            this.mostrarToast(t("corrigir"));
         }
 
         /* -- Mostrar estados loading/success/error. -- */
