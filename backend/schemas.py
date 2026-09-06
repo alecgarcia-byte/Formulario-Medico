@@ -248,22 +248,6 @@ class RespuestaCreada(BaseModel):
     id: uuid.UUID
 
 
-class TokenRespuesta(BaseModel):
-    """Respuesta del login admin."""
-
-    access_token: str
-    token_type: str = "bearer"
-
-
-class LoginIn(BaseModel):
-    """Credenciales de login del admin."""
-
-    usuario: str = Field(min_length=1, max_length=50)
-    password: str = Field(min_length=1, max_length=72)
-
-    model_config = ConfigDict(str_strip_whitespace=True)
-
-
 class RespostaItem(ProfesorOut):
     """Detalle de un registro, con campos sensibles descifrados."""
 

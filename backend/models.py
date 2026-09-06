@@ -21,6 +21,7 @@ from sqlalchemy import (
     DateTime,
     Index,
     Integer,
+    JSON,
     String,
     Text,
     TypeDecorator,
@@ -178,6 +179,65 @@ class AdminSession(Base):
     )
     revocado: Mapped[bool] = mapped_column(
         nullable=False, default=False
+    )
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False
+    )
+
+
+class AuditLog(Base):
+    """Registro de auditoría (cumplimiento RGPD/LGPD).
+
+    Cada operación sensible (acceso/exportación) se anota aquí. La columna
+    `accion` sigue el vocabulario del esquema SQL ('INSERT','UPDATE','SELECT'...).
+    """
+
+    __tablename__ = "audit_log"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUIDChar, primary_key=True, default=uuid.uuid4
+    )
+    tabla: Mapped[str] = mapped_column(String(50), nullable=False)
+    registro_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUIDChar, nullable=True
+    )
+    accion: Mapped[str] = mapped_column(String(20), nullable=False)
+    admin_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUIDChar, nullable=True
+    )
+    ip_origen: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True
+    )
+    user_agent: Mapped[Optional[str]] = mapped_column(Text, nullable=True)
+    datos_antes: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    datos_despues: Mapped[Optional[dict]] = mapped_column(JSON, nullable=True)
+    created_at: Mapped[datetime] = mapped_column(
+        DateTime(timezone=True), default=_utcnow, nullable=False
+    )
+
+
+class ExportLog(Base):
+    """Registro de exportaciones Excel (trazabilidad RGPD/LGPD)."""
+
+    __tablename__ = "export_log"
+
+    id: Mapped[uuid.UUID] = mapped_column(
+        UUIDChar, primary_key=True, default=uuid.uuid4
+    )
+    admin_user_id: Mapped[Optional[uuid.UUID]] = mapped_column(
+        UUIDChar, nullable=True
+    )
+    ip_origen: Mapped[Optional[str]] = mapped_column(
+        String(45), nullable=True
+    )
+    registros_exportados: Mapped[int] = mapped_column(
+        Integer, nullable=False, default=0
+    )
+    nombre_archivo: Mapped[Optional[str]] = mapped_column(
+        String(255), nullable=True
+    )
+    filtros_aplicados: Mapped[Optional[dict]] = mapped_column(
+        JSON, nullable=True
     )
     created_at: Mapped[datetime] = mapped_column(
         DateTime(timezone=True), default=_utcnow, nullable=False

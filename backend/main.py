@@ -23,6 +23,7 @@ from pathlib import Path
 from fastapi import Depends, FastAPI, HTTPException, Request, Response, status
 from fastapi.middleware.cors import CORSMiddleware
 from fastapi.responses import HTMLResponse, JSONResponse, StreamingResponse
+from fastapi.staticfiles import StaticFiles
 from sqlalchemy import func, select
 from sqlalchemy.orm import Session
 
@@ -50,9 +51,23 @@ def _configurar_logging() -> logging.Logger:
 
 logger = _configurar_logging()
 
-# Creamos las tablas en arranque (apropiado para serverless/lite).
-# Para producción con migraciones (Alembic) se elimina/ajusta esta línea.
-Base.metadata.create_all(bind=engine)
+
+def _asegurar_tablas() -> None:
+    """Crea tablas donde no están gestionadas por migración.
+
+    - En SQLite (desarrollo/tests) crea el esquema automáticamente.
+    - En PostgreSQL (Supabase) NO ejecuta DDL: el esquema se gestiona con
+      `schema_supabase.sql`. Esto evita fallar/cold-start lento en Vercel
+      y no choca con el esquema ya desplegado.
+    """
+    try:
+        if engine.dialect.name == "sqlite":
+            Base.metadata.create_all(bind=engine)
+    except Exception:  # noqa: BLE001 - no bloqueamos el arranque por DDL
+        logger.exception("No se pudieron crear/verificar las tablas")
+
+
+_asegurar_tablas()
 
 
 def _validar_secretos_al_arranque() -> None:
@@ -102,6 +117,13 @@ def _crear_aplicacion() -> FastAPI:
     )
 
     app.add_middleware(SeguridadHeadersMiddleware)
+
+    # Assets del panel admin (CSS/JS). En Vercel los sirve el CDN como
+    # estáticos; en local uvicorn también los sirve desde aquí (robustez).
+    _raiz = Path(__file__).resolve().parent.parent
+    _carpeta_porphyria = _raiz / "porphyria"
+    if _carpeta_porphyria.is_dir():
+        app.mount("/porphyria", StaticFiles(directory=_carpeta_porphyria), name="porphyria")
 
     # --- Manejo centralizado de errores ---
     @app.exception_handler(HTTPException)
@@ -322,11 +344,42 @@ def _crear_aplicacion() -> FastAPI:
                 detail="Não foi possível gerar a exportação.",
             ) from exc
 
+        # Auditoría: registramos la exportación (trazabilidad RGPD/LGPD).
+        ip = request.client.host if request.client else None
         logger.info(
             "Exportação gerada por admin (registros=%d) ip=%s",
             len(registros),
-            request.client.host if request.client else "unknown",
+            ip or "unknown",
         )
+        try:
+            from datetime import UTC, datetime as _dt
+
+            db.add(
+                models.ExportLog(
+                    ip_origen=ip,
+                    registros_exportados=len(registros),
+                    nombre_archivo=nombre,
+                    filtros_aplicados={
+                        "cargo": cargo,
+                        "universidad": universidad,
+                        "exportado_en": _dt.now(UTC).isoformat(),
+                    },
+                )
+            )
+            db.add(
+                models.AuditLog(
+                    tabla="export_log",
+                    accion="SELECT",
+                    ip_origen=ip,
+                    datos_despues={"registros": len(registros),
+                                   "archivo": nombre},
+                )
+            )
+            db.commit()
+        except Exception:  # noqa: BLE001 - el log no puede romper la descarga
+            db.rollback()
+            logger.exception("No se pudo registrar la exportación (audit_log)")
+
         return StreamingResponse(
             iter([contenido]),
             media_type=(

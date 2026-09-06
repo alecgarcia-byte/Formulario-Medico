@@ -52,6 +52,19 @@ COLUMNAS_EXPORTACION: list[tuple[str, str]] = [
 ]
 
 
+def _naive_utc(valor):
+    """Convierte a datetime naive (UTC) para que openpyxl lo acepte.
+
+    openpyxl no soporta datetimes con zona horaria: en PostgreSQL los
+    TIMESTAMPTZ llegan "aware". Si es naive (SQLite/tests) se deja igual.
+    """
+    if valor is None:
+        return None
+    if getattr(valor, "tzinfo", None) is not None:
+        return valor.astimezone(UTC).replace(tzinfo=None)
+    return valor
+
+
 def generar_excel(registros: Iterable[models.Profesor]) -> tuple[bytes, str]:
     """Genera un .xlsx con los registros (descifrando campos sensibles).
 
@@ -93,7 +106,7 @@ def generar_excel(registros: Iterable[models.Profesor]) -> tuple[bytes, str]:
                 "cargo_docente": r.cargo_docente,
                 "institucion": r.institucion,
                 "departamento": r.departamento,
-                "created_at": r.created_at,
+                "created_at": _naive_utc(r.created_at),
             }
         )
 

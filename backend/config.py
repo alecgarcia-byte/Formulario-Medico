@@ -86,21 +86,6 @@ def jwt_secret() -> str:
     return secreto
 
 
-def credenciales_admin() -> tuple[str, str]:
-    """Devuelve (usuario, hash_bcrypt) del admin; valida su presencia.
-
-    Se mantiene por compatibilidad, pero el acceso ya no usa usuario/
-    contraseña: se autentica con `admin_token()` (URL/llave secreta).
-    """
-    usuario = _get_secreto("ADMIN_USER")   # sin default
-    hash_pass = _get_secreto("ADMIN_PASSWORD_HASH")  # sin default
-    if not hash_pass.startswith("$2"):
-        raise RuntimeError(
-            "ADMIN_PASSWORD_HASH debe ser un hash bcrypt (empieza con '$2')."
-        )
-    return usuario, hash_pass
-
-
 def admin_token() -> str:
     """Token/llave secreta de acceso al panel admin (ADMIN_TOKEN).
 

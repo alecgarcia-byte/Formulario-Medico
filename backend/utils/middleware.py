@@ -12,6 +12,7 @@ conocidos de Starlette y funcionar de forma confiable en Vercel serverless.
 
 from __future__ import annotations
 
+import os
 import time
 from collections import defaultdict, deque
 from typing import Callable, Optional
@@ -19,11 +20,22 @@ from typing import Callable, Optional
 from fastapi import Request
 from starlette.types import ASGIApp, Message, Receive, Scope, Send
 
-
 # Configuración de rate limiting
-TASA_MAX_REQUESTS = 60
+# En Vercel serverless las instancias son efímeras y el `X-Forwarded-For`
+# trae la IP real del cliente. Usamos un límite más amplio en producción
+# para no castigar a usuarios legítimos tras el borde de Vercel.
+_TASA_MAX_DEFECTO = int(os.getenv("RATE_LIMIT_MAX", "300"))
+TASA_MAX_REQUESTS = max(10, _TASA_MAX_DEFECTO)
 TASA_VENTANA_SEGUNDOS = 60
 _historial: defaultdict[str, deque] = defaultdict(deque)
+
+# Las rutas del panel admin (protegidas por token JWT de acceso único) no se
+# limitan por IP: el token secreto ya es la barrera y evitar falsos 429.
+RUTAS_SIN_LIMITE = ("/api/admin/", "/admin-")
+
+# Tope de entradas en el historial; lo podamos periódicamente para evitar
+# que crezca sin límite como diccionario en memoria.
+_MAX_IP_AUDITADAS = 10_000
 
 
 SEGURIDAD_HEADERS = {
@@ -60,6 +72,15 @@ class SeguridadHeadersMiddleware:
 
         request = Request(scope)
         ip = self._obtener_ip(request)
+        ruta = scope.get("path", "")
+
+        # El panel/admin (protegido por token JWT único) fuera del rate limit.
+        if (
+            ruta.startswith(RUTAS_SIN_LIMITE[0])
+            or ruta.startswith(RUTAS_SIN_LIMITE[1])
+        ):
+            await self.app(scope, receive, send)
+            return
 
         if self._limitar(ip):
             cuerpo = b"Too many requests. Tente novamente em instantes."
@@ -100,6 +121,16 @@ class SeguridadHeadersMiddleware:
             return True
 
         cola.append(ahora)
+
+        # Podar entradas antiguas para que la tabla no crezca sin límite.
+        if len(_historial) > _MAX_IP_AUDITADAS:
+            for _ip, _cola in list(_historial.items()):
+                if not _cola:
+                    _historial.pop(_ip, None)
+                else:
+                    while _cola and (ahora - _cola[0]) > TASA_VENTANA_SEGUNDOS:
+                        _cola.popleft()
+
         return False
 
     @staticmethod

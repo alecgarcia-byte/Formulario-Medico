@@ -44,13 +44,19 @@ def _main() -> None:
     if args.dias <= 0:
         parser.error("Los días de vida deben ser > 0.")
 
+    from backend import config as app_config
     from backend.utils.auth import emitir_jwt_acceso
+
+    base = (app_config.frontend_url() or "").rstrip("/")
+    if not base:
+        base = "https://formulario-medico.vercel.app"
+        print("AVISO: FRONTEND_URL no configurado; se usa el dominio base por defecto.")
 
     token = emitir_jwt_acceso(
         expira_minutos=args.dias * 24 * 60
     )
     print("\n=== URL de acceso al panel admin (única) ===")
-    print(f"\n  https://formulario-medico.vercel.app/admin-{token}\n")
+    print(f"\n  {base}/admin-{token}\n")
     print(f"  Vida del acceso: {args.dias} día(s)")
     print(
         "  Guarda esta URL en un lugar seguro. "

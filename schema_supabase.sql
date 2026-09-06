@@ -91,7 +91,7 @@ CREATE TABLE IF NOT EXISTS professores (
 CREATE TABLE IF NOT EXISTS admin_users (
     id              UUID PRIMARY KEY DEFAULT uuid_generate_v4(),
     username        VARCHAR(50)   NOT NULL UNIQUE,
-    password_hash   VARCHAR(255)  NOT NULL,  -- bcrypt
+    password_hash   VARCHAR(255),  -- obsoleto: el acceso es por URL JWT
     email           VARCHAR(254),
     is_active       BOOLEAN       NOT NULL DEFAULT true,
     last_login      TIMESTAMPTZ,
@@ -294,18 +294,11 @@ CREATE POLICY "service_role_full_access" ON export_log
 -- ============================================================
 -- 6. DATOS INICIALES
 -- ============================================================
-
--- Usuario admin por defecto (contraseña: cambiar en producción)
--- Password hash generado con: python -c "import bcrypt; print(bcrypt.hashpw(b'admin123', bcrypt.gensalt(rounds=12)).decode())"
--- ⚠️  CAMBIAR ESTA CONTRASEÑA EN PRODUCCIÓN
-INSERT INTO admin_users (username, password_hash, email, is_active)
-VALUES (
-    'admin',
-    '$2b$12$LJ3m4ris7Hke5dmFLKkBNONYxJLGvG8SZrJuTfBmZmMGVfMPi6Oy.',
-    'admin@formulario.local',
-    true
-)
-ON CONFLICT (username) DO NOTHING;
+--
+-- El panel admin usa acceso por URL JWT de acceso único (sin usuario/
+-- contraseña). Por eso NO se insertan usuarios admin por defecto.
+-- La tabla admin_users se conserva únicamente por compatibilidad esquemática
+-- con las sesiones/auditoría (admin_user_id es nullable).
 
 -- ============================================================
 -- LISTO
